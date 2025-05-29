@@ -167,16 +167,16 @@ const Index = () => {
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
             <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 h-12 p-1 bg-gray-100 rounded-lg">
+              <TabsList className="grid w-full grid-cols-2 mb-6 h-11 p-0.5 bg-gray-100 rounded-lg">
                 <TabsTrigger 
                   value="text" 
-                  className="text-sm sm:text-base font-medium py-2.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                  className="text-sm sm:text-base font-medium h-10 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all flex items-center justify-center"
                 >
                   Text Input
                 </TabsTrigger>
                 <TabsTrigger 
                   value="file" 
-                  className="text-sm sm:text-base font-medium py-2.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                  className="text-sm sm:text-base font-medium h-10 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all flex items-center justify-center"
                 >
                   Excel Upload
                 </TabsTrigger>
