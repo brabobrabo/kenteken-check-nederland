@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -163,7 +162,6 @@ const VehicleDetail = () => {
       inrichting: 'Configuration',
       aantal_wielen: 'Number of Wheels',
       aantal_assen: 'Number of Axles',
-      handelsbenaming: 'Trade Name',
       vervaldatum_tachograaf: 'Tachograph Expiration',
       taxi_indicator: 'Taxi Indicator',
       maximum_snelheid: 'Maximum Speed',
