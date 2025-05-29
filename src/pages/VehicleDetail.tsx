@@ -292,7 +292,7 @@ const VehicleDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin mr-2" />
@@ -304,27 +304,31 @@ const VehicleDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <Button 
             variant="outline" 
             onClick={() => navigate('/')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 mb-2 sm:mb-0"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Search
+            <span className="hidden sm:inline">Back to Search</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900 flex-1">
-            Vehicle Details: {kenteken}
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 flex-1">
+            <span className="block sm:inline">Vehicle Details:</span>
+            <span className="block sm:inline mt-1 sm:mt-0 sm:ml-2">{kenteken}</span>
           </h1>
           {vehicleData && vehicleData.status === 'found' && (
             <Button 
               onClick={exportToExcel}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              size="sm"
             >
               <Download className="h-4 w-4" />
-              Export to Excel
+              <span className="hidden sm:inline">Export to Excel</span>
+              <span className="sm:hidden">Export</span>
             </Button>
           )}
         </div>
@@ -333,9 +337,9 @@ const VehicleDetail = () => {
           <>
             {/* Main Vehicle Information */}
             <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl text-blue-700 flex items-center gap-3">
-                  Vehicle Information
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-2xl text-blue-700 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                  <span>Vehicle Information</span>
                   <Badge
                     variant={vehicleData.status === 'found' ? 'default' : 'destructive'}
                     className={vehicleData.status === 'found' ? 'bg-green-100 text-green-800' : ''}
@@ -344,8 +348,8 @@ const VehicleDetail = () => {
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="px-4 sm:px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">License Plate</label>
@@ -353,50 +357,52 @@ const VehicleDetail = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Make</label>
-                      <p className="text-lg">{vehicleData.merk}</p>
+                      <p className="text-base sm:text-lg break-words">{vehicleData.merk}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Model</label>
-                      <p className="text-lg">{vehicleData.handelsbenaming}</p>
+                      <p className="text-base sm:text-lg break-words">{vehicleData.handelsbenaming}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Catalog Price</label>
-                      <p className="text-lg">{vehicleData.catalogusprijs}</p>
+                      <p className="text-base sm:text-lg">{vehicleData.catalogusprijs}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">MOT Expiration</label>
-                      <p className="text-lg">{vehicleData.apkVervaldatum}</p>
+                      <p className="text-base sm:text-lg">{vehicleData.apkVervaldatum}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">First Admission</label>
-                      <p className="text-lg">{formatDate(vehicleData.datumEersteToelating)}</p>
+                      <p className="text-base sm:text-lg">{formatDate(vehicleData.datumEersteToelating)}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">WAM Insured</label>
-                      <Badge
-                        variant={
-                          vehicleData.wamVerzekerd.toLowerCase() === 'ja' || 
-                          vehicleData.wamVerzekerd.toLowerCase() === 'yes'
-                            ? 'default'
-                            : vehicleData.wamVerzekerd === 'Not Found' || vehicleData.wamVerzekerd === 'Error'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                        className={
-                          vehicleData.wamVerzekerd.toLowerCase() === 'ja' || 
-                          vehicleData.wamVerzekerd.toLowerCase() === 'yes'
-                            ? 'bg-green-100 text-green-800'
-                            : ''
-                        }
-                      >
-                        {vehicleData.wamVerzekerd}
-                      </Badge>
+                      <div className="mt-1">
+                        <Badge
+                          variant={
+                            vehicleData.wamVerzekerd.toLowerCase() === 'ja' || 
+                            vehicleData.wamVerzekerd.toLowerCase() === 'yes'
+                              ? 'default'
+                              : vehicleData.wamVerzekerd === 'Not Found' || vehicleData.wamVerzekerd === 'Error'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                          className={
+                            vehicleData.wamVerzekerd.toLowerCase() === 'ja' || 
+                            vehicleData.wamVerzekerd.toLowerCase() === 'yes'
+                              ? 'bg-green-100 text-green-800'
+                              : ''
+                          }
+                        >
+                          {vehicleData.wamVerzekerd}
+                        </Badge>
+                      </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Suspended</label>
-                      <p className="text-lg">{vehicleData.geschorst}</p>
+                      <p className="text-base sm:text-lg">{vehicleData.geschorst}</p>
                     </div>
                   </div>
                 </div>
@@ -406,17 +412,17 @@ const VehicleDetail = () => {
             {/* Complete Vehicle Data */}
             {rawApiData && (
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-blue-700">Complete Vehicle Data</CardTitle>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg sm:text-2xl text-blue-700">Complete Vehicle Data</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <CardContent className="px-4 sm:px-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {Object.entries(getFilteredApiData(rawApiData)).map(([key, value]) => (
-                      <div key={key} className="space-y-1">
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <div key={key} className="space-y-1 p-3 bg-gray-50 rounded-lg">
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block">
                           {formatFieldName(key)}
                         </label>
-                        <div className="text-sm">
+                        <div className="text-sm break-words">
                           {formatValue(key, value)}
                         </div>
                       </div>

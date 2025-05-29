@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -235,15 +234,20 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 border-dashed"
+            className="h-8 border-dashed text-xs"
             onClick={() => initializeTempFilters(column)}
           >
-            <Filter className="h-4 w-4 mr-1" />
-            {appliedValues.length > 0 ? `${appliedValues.length} selected` : 'Filter'}
-            <ChevronDown className="h-4 w-4 ml-1" />
+            <Filter className="h-3 w-3 mr-1" />
+            <span className="hidden sm:inline">
+              {appliedValues.length > 0 ? `${appliedValues.length} selected` : 'Filter'}
+            </span>
+            <span className="sm:hidden">
+              {appliedValues.length > 0 ? appliedValues.length.toString() : 'F'}
+            </span>
+            <ChevronDown className="h-3 w-3 ml-1" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-0 bg-white" align="start">
+        <PopoverContent className="w-64 p-0 bg-white z-50" align="start">
           <Command>
             <CommandInput 
               placeholder={`Search ${label.toLowerCase()}...`}
@@ -316,13 +320,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   return (
     <Card className="shadow-lg">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl text-blue-700">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <CardTitle className="text-xl sm:text-2xl text-blue-700">
             Verification Results
           </CardTitle>
           {data.length > 0 && (
-            <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
               Export to Excel
             </Button>
           )}
@@ -339,22 +343,22 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         )}
         
         {data.length > 0 && (
-          <div className="flex gap-4 items-center">
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
+            <div className="flex gap-2 order-2 sm:order-1">
               <Badge variant="default" className="bg-green-100 text-green-800">
-                ✓ Found: {foundCount}
+                Found: {foundCount}
               </Badge>
               <Badge variant="destructive" className="bg-red-100 text-red-800">
-                ✗ Errors: {errorCount}
+                Errors: {errorCount}
               </Badge>
             </div>
             <Input
               placeholder="Global search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
+              className="w-full sm:max-w-sm order-1 sm:order-2"
             />
-            <Button onClick={clearAllFilters} variant="outline" size="sm">
+            <Button onClick={clearAllFilters} variant="outline" size="sm" className="w-full sm:w-auto order-3">
               Clear Filters
             </Button>
           </div>
@@ -362,8 +366,52 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       </CardHeader>
       
       {data.length > 0 && (
-        <CardContent>
-          <div className="overflow-x-auto">
+        <CardContent className="px-2 sm:px-6">
+          {/* Mobile Card View */}
+          <div className="block sm:hidden space-y-3">
+            {filteredData.map((item, index) => (
+              <div
+                key={index}
+                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                  item.status === 'error' ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'hover:bg-blue-50'
+                }`}
+                onClick={() => handleRowClick(item.kenteken)}
+              >
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="font-mono font-bold text-blue-700">{item.kenteken}</span>
+                    <Badge
+                      variant={
+                        item.wamVerzekerd.toLowerCase() === 'ja' || 
+                        item.wamVerzekerd.toLowerCase() === 'yes'
+                          ? 'default'
+                          : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
+                          ? 'destructive'
+                          : 'secondary'
+                      }
+                      className={
+                        item.wamVerzekerd.toLowerCase() === 'ja' || 
+                        item.wamVerzekerd.toLowerCase() === 'yes'
+                          ? 'bg-green-100 text-green-800'
+                          : ''
+                      }
+                    >
+                      {item.wamVerzekerd}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <div><span className="font-medium">Make:</span> {item.merk}</div>
+                    <div><span className="font-medium">Model:</span> {item.handelsbenaming}</div>
+                    <div><span className="font-medium">MOT:</span> {item.apkVervaldatum}</div>
+                    <div><span className="font-medium">Price:</span> {item.catalogusprijs}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-gray-50">
@@ -377,13 +425,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     { key: 'wamVerzekerd', label: 'WAM Insured' },
                     { key: 'geschorst', label: 'Suspended' }
                   ].map(({ key, label }) => (
-                    <th key={key} className="p-3 text-left">
+                    <th key={key} className="p-2 lg:p-3 text-left">
                       <div className="space-y-2">
                         <div
-                          className="cursor-pointer hover:bg-gray-100 font-semibold flex items-center"
+                          className="cursor-pointer hover:bg-gray-100 font-semibold flex items-center text-xs lg:text-sm"
                           onClick={() => handleSort(key as keyof VehicleData)}
                         >
-                          {label}
+                          <span className="truncate">{label}</span>
                           {sortColumn === key && (
                             <span className="ml-1">
                               {sortDirection === 'asc' ? '↑' : '↓'}
@@ -405,15 +453,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     }`}
                     onClick={() => handleRowClick(item.kenteken)}
                   >
-                    <td className="p-3 font-mono font-bold text-blue-700">
+                    <td className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm">
                       {item.kenteken}
                     </td>
-                    <td className="p-3">{item.merk}</td>
-                    <td className="p-3">{item.handelsbenaming}</td>
-                    <td className="p-3">{item.apkVervaldatum}</td>
-                    <td className="p-3">{item.catalogusprijs}</td>
-                    <td className="p-3">{formatDate(item.datumEersteToelating)}</td>
-                    <td className="p-3">
+                    <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>
+                    <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.handelsbenaming}</td>
+                    <td className="p-2 lg:p-3 text-sm">{item.apkVervaldatum}</td>
+                    <td className="p-2 lg:p-3 text-sm">{item.catalogusprijs}</td>
+                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteToelating)}</td>
+                    <td className="p-2 lg:p-3">
                       <Badge
                         variant={
                           item.wamVerzekerd.toLowerCase() === 'ja' || 
@@ -433,7 +481,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                         {item.wamVerzekerd}
                       </Badge>
                     </td>
-                    <td className="p-3">{item.geschorst}</td>
+                    <td className="p-2 lg:p-3 text-sm">{item.geschorst}</td>
                   </tr>
                 ))}
               </tbody>

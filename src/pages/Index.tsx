@@ -94,28 +94,28 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="text-center py-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            🇳🇱 Dutch License Plate Verifier
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <div className="text-center py-4 sm:py-8 px-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+            Dutch License Plate Verifier
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Verify vehicle information and insurance status using RDW Open Data
           </p>
         </div>
 
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-blue-700">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl sm:text-2xl text-center text-blue-700">
               Input License Plates
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="text">Text Input</TabsTrigger>
-                <TabsTrigger value="file">Excel Upload</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
+                <TabsTrigger value="text" className="text-sm sm:text-base">Text Input</TabsTrigger>
+                <TabsTrigger value="file" className="text-sm sm:text-base">Excel Upload</TabsTrigger>
               </TabsList>
               
               <TabsContent value="text">
