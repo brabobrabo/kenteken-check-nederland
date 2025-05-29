@@ -53,6 +53,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       'Make': item.merk,
       'Model': item.handelsbenaming,
       'MOT Expiration': item.apkVervaldatum,
+      'Catalog Price': item.catalogusprijs,
       'First Admission': item.datumEersteToelating,
       'WAM Insured': item.wamVerzekerd,
       'Suspended': item.geschorst,
@@ -122,6 +123,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     { key: 'merk', label: 'Make' },
                     { key: 'handelsbenaming', label: 'Model' },
                     { key: 'apkVervaldatum', label: 'MOT Expiration' },
+                    { key: 'catalogusprijs', label: 'Catalog Price' },
                     { key: 'datumEersteToelating', label: 'First Admission' },
                     { key: 'wamVerzekerd', label: 'WAM Insured' },
                     { key: 'geschorst', label: 'Suspended' }
@@ -155,6 +157,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     <td className="p-3">{item.merk}</td>
                     <td className="p-3">{item.handelsbenaming}</td>
                     <td className="p-3">{item.apkVervaldatum}</td>
+                    <td className="p-3">{item.catalogusprijs}</td>
                     <td className="p-3">{item.datumEersteToelating}</td>
                     <td className="p-3">
                       <Badge
@@ -192,4 +195,3 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       )}
     </Card>
   );
-};

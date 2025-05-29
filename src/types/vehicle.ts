@@ -4,6 +4,7 @@ export interface VehicleData {
   merk: string;
   handelsbenaming: string;
   apkVervaldatum: string;
+  catalogusprijs: string;
   datumEersteToelating: string;
   wamVerzekerd: string;
   geschorst: string;
