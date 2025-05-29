@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,18 +39,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
-    kenteken: [],
-    merk: [],
-    handelsbenaming: [],
-    apkVervaldatum: [],
-    catalogusprijs: [],
-    datumEersteToelating: [],
-    wamVerzekerd: [],
-    geschorst: []
-  });
-  
-  // Temporary filter state for each column
-  const [tempColumnFilters, setTempColumnFilters] = useState<ColumnFilters>({
     kenteken: [],
     merk: [],
     handelsbenaming: [],
@@ -131,22 +120,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  const handleTempFilterChange = (column: keyof ColumnFilters, value: string, checked: boolean) => {
-    setTempColumnFilters(prev => ({
-      ...prev,
-      [column]: checked 
-        ? [...prev[column], value]
-        : prev[column].filter(v => v !== value)
-    }));
-  };
-
-  const applyFilters = (column: keyof ColumnFilters) => {
-    setColumnFilters(prev => ({
-      ...prev,
-      [column]: tempColumnFilters[column]
-    }));
-  };
-
   const clearAllFilters = () => {
     setSearchTerm('');
     setColumnFilters({
@@ -159,38 +132,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       wamVerzekerd: [],
       geschorst: []
     });
-    setTempColumnFilters({
-      kenteken: [],
-      merk: [],
-      handelsbenaming: [],
-      apkVervaldatum: [],
-      catalogusprijs: [],
-      datumEersteToelating: [],
-      wamVerzekerd: [],
-      geschorst: []
-    });
-  };
-
-  const selectAllForColumn = (column: keyof ColumnFilters) => {
-    const uniqueValues = getUniqueValues(column);
-    setTempColumnFilters(prev => ({
-      ...prev,
-      [column]: uniqueValues
-    }));
-  };
-
-  const deselectAllForColumn = (column: keyof ColumnFilters) => {
-    setTempColumnFilters(prev => ({
-      ...prev,
-      [column]: []
-    }));
-  };
-
-  const initializeTempFilters = (column: keyof ColumnFilters) => {
-    setTempColumnFilters(prev => ({
-      ...prev,
-      [column]: [...columnFilters[column]]
-    }));
   };
 
   const exportToExcel = () => {
@@ -220,34 +161,72 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
     const uniqueValues = getUniqueValues(column);
-    const selectedValues = tempColumnFilters[column];
-    const appliedValues = columnFilters[column];
+    const selectedValues = columnFilters[column];
+    const [localSelectedValues, setLocalSelectedValues] = useState<string[]>([]);
     const [filterSearch, setFilterSearch] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
 
     const filteredValues = uniqueValues.filter(value =>
       value.toLowerCase().includes(filterSearch.toLowerCase())
     );
 
+    const handleOpenChange = (open: boolean) => {
+      setIsOpen(open);
+      if (open) {
+        // Initialize local state with current filters
+        setLocalSelectedValues([...selectedValues]);
+        setFilterSearch('');
+      }
+    };
+
+    const toggleValue = (value: string) => {
+      setLocalSelectedValues(prev => 
+        prev.includes(value) 
+          ? prev.filter(v => v !== value)
+          : [...prev, value]
+      );
+    };
+
+    const selectAll = () => {
+      setLocalSelectedValues([...uniqueValues]);
+    };
+
+    const deselectAll = () => {
+      setLocalSelectedValues([]);
+    };
+
+    const applyFilters = () => {
+      setColumnFilters(prev => ({
+        ...prev,
+        [column]: localSelectedValues
+      }));
+      setIsOpen(false);
+    };
+
+    const cancelFilters = () => {
+      setLocalSelectedValues([...selectedValues]);
+      setIsOpen(false);
+    };
+
     return (
-      <Popover>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className="h-8 border-dashed text-xs"
-            onClick={() => initializeTempFilters(column)}
           >
             <Filter className="h-3 w-3 mr-1" />
             <span className="hidden sm:inline">
-              {appliedValues.length > 0 ? `${appliedValues.length} selected` : 'Filter'}
+              {selectedValues.length > 0 ? `${selectedValues.length} selected` : 'Filter'}
             </span>
             <span className="sm:hidden">
-              {appliedValues.length > 0 ? appliedValues.length.toString() : 'F'}
+              {selectedValues.length > 0 ? selectedValues.length.toString() : 'F'}
             </span>
             <ChevronDown className="h-3 w-3 ml-1" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-0 bg-white z-50" align="start">
+        <PopoverContent className="w-64 p-0 bg-white border shadow-lg z-50" align="start">
           <Command>
             <CommandInput 
               placeholder={`Search ${label.toLowerCase()}...`}
@@ -257,18 +236,12 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                <CommandItem
-                  onSelect={() => selectAllForColumn(column)}
-                  className="cursor-pointer"
-                >
+                <CommandItem onSelect={selectAll} className="cursor-pointer">
                   <div className="flex items-center space-x-2">
                     <span>Select All</span>
                   </div>
                 </CommandItem>
-                <CommandItem
-                  onSelect={() => deselectAllForColumn(column)}
-                  className="cursor-pointer"
-                >
+                <CommandItem onSelect={deselectAll} className="cursor-pointer">
                   <div className="flex items-center space-x-2">
                     <span>Deselect All</span>
                   </div>
@@ -277,12 +250,12 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 {filteredValues.map((value) => (
                   <CommandItem
                     key={value}
-                    onSelect={() => handleTempFilterChange(column, value, !selectedValues.includes(value))}
+                    onSelect={() => toggleValue(value)}
                     className="cursor-pointer"
                   >
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border border-gray-300 rounded flex items-center justify-center">
-                        {selectedValues.includes(value) && (
+                        {localSelectedValues.includes(value) && (
                           <Check className="h-3 w-3 text-blue-600" />
                         )}
                       </div>
@@ -293,22 +266,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               </CommandGroup>
             </CommandList>
             <div className="p-2 border-t bg-gray-50 flex gap-2">
-              <Button 
-                size="sm" 
-                onClick={() => applyFilters(column)}
-                className="flex-1"
-              >
+              <Button size="sm" onClick={applyFilters} className="flex-1">
                 Apply
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => setTempColumnFilters(prev => ({
-                  ...prev,
-                  [column]: [...columnFilters[column]]
-                }))}
-                className="flex-1"
-              >
+              <Button size="sm" variant="outline" onClick={cancelFilters} className="flex-1">
                 Cancel
               </Button>
             </div>
