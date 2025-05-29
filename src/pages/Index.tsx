@@ -13,12 +13,35 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { LogIn, Heart } from 'lucide-react';
 
+const CACHE_KEY = 'license_plate_results';
+
 const Index = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Load cached results on component mount
+  useEffect(() => {
+    const cachedResults = sessionStorage.getItem(CACHE_KEY);
+    if (cachedResults) {
+      try {
+        const parsedResults = JSON.parse(cachedResults);
+        setVehicleData(parsedResults);
+      } catch (error) {
+        console.error('Error parsing cached results:', error);
+        sessionStorage.removeItem(CACHE_KEY);
+      }
+    }
+  }, []);
+
+  // Cache results whenever vehicleData changes
+  useEffect(() => {
+    if (vehicleData.length > 0) {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(vehicleData));
+    }
+  }, [vehicleData]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
