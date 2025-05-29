@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Download } from 'lucide-react';
 import { VehicleData } from '@/types/vehicle';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 const VehicleDetail = () => {
   const { kenteken } = useParams<{ kenteken: string }>();
@@ -234,7 +234,6 @@ const VehicleDetail = () => {
     ).join(' ');
   };
 
-  // Filter out unwanted fields from the API data
   const getFilteredApiData = (data: any) => {
     if (!data) return {};
     
@@ -254,6 +253,41 @@ const VehicleDetail = () => {
     });
     
     return filteredData;
+  };
+
+  const exportToExcel = () => {
+    if (!rawApiData || !vehicleData) {
+      toast.error('No data available to export');
+      return;
+    }
+
+    try {
+      const filteredData = getFilteredApiData(rawApiData);
+      
+      // Prepare data for Excel export
+      const exportData = Object.entries(filteredData).map(([key, value]) => ({
+        Field: formatFieldName(key),
+        Value: value ? value.toString() : 'Not Available'
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Add the worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Vehicle Details');
+
+      // Generate filename with license plate
+      const filename = `Vehicle_Details_${vehicleData.kenteken.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+
+      // Write the file
+      XLSX.writeFile(workbook, filename);
+      
+      toast.success('Vehicle details exported to Excel successfully');
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('Failed to export vehicle details');
+    }
   };
 
   if (isLoading) {
@@ -281,9 +315,18 @@ const VehicleDetail = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Search
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 flex-1">
             Vehicle Details: {kenteken}
           </h1>
+          {vehicleData && vehicleData.status === 'found' && (
+            <Button 
+              onClick={exportToExcel}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export to Excel
+            </Button>
+          )}
         </div>
 
         {vehicleData && (
@@ -292,7 +335,7 @@ const VehicleDetail = () => {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl text-blue-700 flex items-center gap-3">
-                  🚗 Vehicle Information
+                  Vehicle Information
                   <Badge
                     variant={vehicleData.status === 'found' ? 'default' : 'destructive'}
                     className={vehicleData.status === 'found' ? 'bg-green-100 text-green-800' : ''}
@@ -364,7 +407,7 @@ const VehicleDetail = () => {
             {rawApiData && (
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-blue-700">📊 Complete Vehicle Data</CardTitle>
+                  <CardTitle className="text-2xl text-blue-700">Complete Vehicle Data</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
