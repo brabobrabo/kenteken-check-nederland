@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -158,35 +159,37 @@ const Index = () => {
           </div>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl sm:text-2xl text-center text-blue-700">
-              Input License Plates
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6">
-            <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
-                <TabsTrigger value="text" className="text-sm sm:text-base">Text Input</TabsTrigger>
-                <TabsTrigger value="file" className="text-sm sm:text-base">Excel Upload</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="text">
-                <LicensePlateInput 
-                  onSubmit={handleLicensePlatesSubmit}
-                  isLoading={isLoading}
-                />
-              </TabsContent>
-              
-              <TabsContent value="file">
-                <FileUpload 
-                  onSubmit={handleLicensePlatesSubmit}
-                  isLoading={isLoading}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        <div className="flex justify-center">
+          <Card className="shadow-lg w-full max-w-4xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl sm:text-2xl text-center text-blue-700">
+                Input License Plates
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 sm:px-6">
+              <Tabs defaultValue="text" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
+                  <TabsTrigger value="text" className="text-sm sm:text-base">Text Input</TabsTrigger>
+                  <TabsTrigger value="file" className="text-sm sm:text-base">Excel Upload</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="text">
+                  <LicensePlateInput 
+                    onSubmit={handleLicensePlatesSubmit}
+                    isLoading={isLoading}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="file">
+                  <FileUpload 
+                    onSubmit={handleLicensePlatesSubmit}
+                    isLoading={isLoading}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
 
         {(isLoading || vehicleData.length > 0) && (
           <ResultsTable 
