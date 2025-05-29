@@ -1,5 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   isLoading,
   progress
 }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -212,6 +213,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const foundCount = data.filter(item => item.status === 'found').length;
   const errorCount = data.filter(item => item.status === 'error').length;
+
+  const handleRowClick = (kenteken: string) => {
+    navigate(`/vehicle/${kenteken}`);
+  };
 
   const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
     const uniqueValues = getUniqueValues(column);
@@ -394,9 +399,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 {filteredData.map((item, index) => (
                   <tr
                     key={index}
-                    className={`border-b hover:bg-gray-50 ${
-                      item.status === 'error' ? 'bg-red-50' : ''
+                    className={`border-b hover:bg-blue-50 cursor-pointer transition-colors ${
+                      item.status === 'error' ? 'bg-red-50 hover:bg-red-100' : ''
                     }`}
+                    onClick={() => handleRowClick(item.kenteken)}
                   >
                     <td className="p-3 font-mono font-bold text-blue-700">
                       {item.kenteken}
