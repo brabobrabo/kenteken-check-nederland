@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -159,16 +160,26 @@ const Index = () => {
         </div>
 
         <Card className="shadow-lg">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-6">
             <CardTitle className="text-xl sm:text-2xl text-center text-blue-700">
               Input License Plates
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
             <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
-                <TabsTrigger value="text" className="text-sm sm:text-base">Text Input</TabsTrigger>
-                <TabsTrigger value="file" className="text-sm sm:text-base">Excel Upload</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-6 h-12 p-1 bg-gray-100 rounded-lg">
+                <TabsTrigger 
+                  value="text" 
+                  className="text-sm sm:text-base font-medium py-2.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                >
+                  Text Input
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="file" 
+                  className="text-sm sm:text-base font-medium py-2.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                >
+                  Excel Upload
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="text">
