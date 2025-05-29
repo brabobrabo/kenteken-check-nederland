@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface FileUploadProps {
   onSubmit: (licensePlates: string[]) => void;
@@ -60,16 +61,30 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     try {
-      const text = await selectedFile.text();
-      
-      // Simple CSV/TSV parsing
-      const lines = text.split('\n').filter(line => line.trim());
-      if (lines.length < 2) {
+      const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls');
+      let rows: string[][] = [];
+
+      if (isExcel) {
+        // Handle Excel files
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        rows = jsonData as string[][];
+      } else {
+        // Handle CSV/TSV files
+        const text = await selectedFile.text();
+        const lines = text.split('\n').filter(line => line.trim());
+        rows = lines.map(line => line.split(/[,;\t]/).map(col => col.trim().replace(/"/g, '')));
+      }
+
+      if (rows.length < 2) {
         toast.error('File must contain at least a header row and one data row');
         return;
       }
       
-      const headers = lines[0].split(/[,;\t]/).map(h => h.trim().replace(/"/g, ''));
+      const headers = rows[0].map(h => String(h || '').trim());
       console.log('Found headers:', headers);
       
       const licensePlateIndex = findLicensePlateColumn(headers);
@@ -77,9 +92,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       
       const licensePlates: string[] = [];
       
-      for (let i = 1; i < lines.length; i++) {
-        const columns = lines[i].split(/[,;\t]/).map(col => col.trim().replace(/"/g, ''));
-        const plate = columns[licensePlateIndex]?.trim();
+      for (let i = 1; i < rows.length; i++) {
+        const plate = String(rows[i][licensePlateIndex] || '').trim();
         if (plate && plate.length > 0) {
           licensePlates.push(plate);
         }
