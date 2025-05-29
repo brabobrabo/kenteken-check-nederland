@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,8 +26,11 @@ const Index = () => {
         const plate = licensePlates[i].trim().toUpperCase();
         if (!plate) continue;
         
+        // Remove dashes from license plate for API call
+        const plateForApi = plate.replace(/-/g, '');
+        
         try {
-          const response = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${plate}`);
+          const response = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${plateForApi}`);
           const data = await response.json();
           
           if (data && data.length > 0) {
