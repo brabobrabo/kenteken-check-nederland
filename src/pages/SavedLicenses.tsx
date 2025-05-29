@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -352,7 +351,7 @@ const SavedLicenses = () => {
   }
 
   const isAllSelected = filteredData.length > 0 && selectedIds.length === filteredData.length;
-  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < filteredData.length;
+  const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < filteredData.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
@@ -513,11 +512,17 @@ const SavedLicenses = () => {
                   <thead>
                     <tr className="border-b bg-gray-50">
                       <th className="p-2 lg:p-3 text-left w-8">
-                        <Checkbox
-                          checked={isAllSelected}
-                          indeterminate={isIndeterminate}
-                          onCheckedChange={handleSelectAll}
-                        />
+                        <div className="relative">
+                          <Checkbox
+                            checked={isAllSelected}
+                            onCheckedChange={handleSelectAll}
+                          />
+                          {isPartiallySelected && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-2 h-2 bg-blue-600 rounded-sm"></div>
+                            </div>
+                          )}
+                        </div>
                       </th>
                       <th className="p-2 lg:p-3 text-left w-8">Actions</th>
                       {[
