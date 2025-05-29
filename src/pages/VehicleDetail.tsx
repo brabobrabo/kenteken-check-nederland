@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -233,6 +234,28 @@ const VehicleDetail = () => {
     ).join(' ');
   };
 
+  // Filter out unwanted fields from the API data
+  const getFilteredApiData = (data: any) => {
+    if (!data) return {};
+    
+    const fieldsToExclude = [
+      'registratie_datum_goedkeuring_afschrijvingsmoment_bpm',
+      'registratie_datum_goedkeuring_afschrijvingsmoment_bpm_dt',
+      'api_gekentekende_voertuigen_assen',
+      'api_gekentekende_voertuigen_brandstof',
+      'api_gekentekende_voertuigen_carrosserie',
+      'api_gekentekende_voertuigen_carrosserie_specifiek',
+      'api_gekentekende_voertuigen_voertuigklasse'
+    ];
+    
+    const filteredData = { ...data };
+    fieldsToExclude.forEach(field => {
+      delete filteredData[field];
+    });
+    
+    return filteredData;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
@@ -345,7 +368,7 @@ const VehicleDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(rawApiData).map(([key, value]) => (
+                    {Object.entries(getFilteredApiData(rawApiData)).map(([key, value]) => (
                       <div key={key} className="space-y-1">
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                           {formatFieldName(key)}
