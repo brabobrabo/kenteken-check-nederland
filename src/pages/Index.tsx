@@ -1,17 +1,58 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/FileUpload';
 import { LicensePlateInput } from '@/components/LicensePlateInput';
 import { ResultsTable } from '@/components/ResultsTable';
+import { UserMenu } from '@/components/UserMenu';
 import { VehicleData } from '@/types/vehicle';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { LogIn } from 'lucide-react';
 
 const Index = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg text-center">
+          <CardContent className="pt-6">
+            <LogIn className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+            <p className="text-gray-600 mb-4">Please sign in to access the license plate verifier.</p>
+            <Button onClick={() => navigate('/auth')}>
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleLicensePlatesSubmit = async (licensePlates: string[]) => {
     setIsLoading(true);
@@ -96,13 +137,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <div className="text-center py-4 sm:py-8 px-2">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-            Dutch License Plate Verifier
-          </h1>
-          <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            Verify vehicle information and insurance status using RDW Open Data
-          </p>
+        <div className="flex justify-between items-center py-4 px-2">
+          <div className="text-center flex-1">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+              Dutch License Plate Verifier
+            </h1>
+            <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
+              Verify vehicle information and insurance status using RDW Open Data
+            </p>
+          </div>
+          <div className="flex items-center">
+            <UserMenu />
+          </div>
         </div>
 
         <Card className="shadow-lg">
