@@ -46,6 +46,18 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     wamVerzekerd: [],
     geschorst: []
   });
+  
+  // Temporary filter state for each column
+  const [tempColumnFilters, setTempColumnFilters] = useState<ColumnFilters>({
+    kenteken: [],
+    merk: [],
+    handelsbenaming: [],
+    apkVervaldatum: [],
+    catalogusprijs: [],
+    datumEersteToelating: [],
+    wamVerzekerd: [],
+    geschorst: []
+  });
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
@@ -118,12 +130,19 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  const handleFilterChange = (column: keyof ColumnFilters, value: string, checked: boolean) => {
-    setColumnFilters(prev => ({
+  const handleTempFilterChange = (column: keyof ColumnFilters, value: string, checked: boolean) => {
+    setTempColumnFilters(prev => ({
       ...prev,
       [column]: checked 
         ? [...prev[column], value]
         : prev[column].filter(v => v !== value)
+    }));
+  };
+
+  const applyFilters = (column: keyof ColumnFilters) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: tempColumnFilters[column]
     }));
   };
 
@@ -139,20 +158,37 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       wamVerzekerd: [],
       geschorst: []
     });
+    setTempColumnFilters({
+      kenteken: [],
+      merk: [],
+      handelsbenaming: [],
+      apkVervaldatum: [],
+      catalogusprijs: [],
+      datumEersteToelating: [],
+      wamVerzekerd: [],
+      geschorst: []
+    });
   };
 
   const selectAllForColumn = (column: keyof ColumnFilters) => {
     const uniqueValues = getUniqueValues(column);
-    setColumnFilters(prev => ({
+    setTempColumnFilters(prev => ({
       ...prev,
       [column]: uniqueValues
     }));
   };
 
   const deselectAllForColumn = (column: keyof ColumnFilters) => {
-    setColumnFilters(prev => ({
+    setTempColumnFilters(prev => ({
       ...prev,
       [column]: []
+    }));
+  };
+
+  const initializeTempFilters = (column: keyof ColumnFilters) => {
+    setTempColumnFilters(prev => ({
+      ...prev,
+      [column]: [...columnFilters[column]]
     }));
   };
 
@@ -179,7 +215,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
     const uniqueValues = getUniqueValues(column);
-    const selectedValues = columnFilters[column];
+    const selectedValues = tempColumnFilters[column];
+    const appliedValues = columnFilters[column];
     const [filterSearch, setFilterSearch] = useState('');
 
     const filteredValues = uniqueValues.filter(value =>
@@ -193,13 +230,14 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             variant="outline"
             size="sm"
             className="h-8 border-dashed"
+            onClick={() => initializeTempFilters(column)}
           >
             <Filter className="h-4 w-4 mr-1" />
-            {selectedValues.length > 0 ? `${selectedValues.length} selected` : 'Filter'}
+            {appliedValues.length > 0 ? `${appliedValues.length} selected` : 'Filter'}
             <ChevronDown className="h-4 w-4 ml-1" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-0" align="start">
+        <PopoverContent className="w-64 p-0 bg-white" align="start">
           <Command>
             <CommandInput 
               placeholder={`Search ${label.toLowerCase()}...`}
@@ -229,7 +267,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 {filteredValues.map((value) => (
                   <CommandItem
                     key={value}
-                    onSelect={() => handleFilterChange(column, value, !selectedValues.includes(value))}
+                    onSelect={() => handleTempFilterChange(column, value, !selectedValues.includes(value))}
                     className="cursor-pointer"
                   >
                     <div className="flex items-center space-x-2">
@@ -244,6 +282,26 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 ))}
               </CommandGroup>
             </CommandList>
+            <div className="p-2 border-t bg-gray-50 flex gap-2">
+              <Button 
+                size="sm" 
+                onClick={() => applyFilters(column)}
+                className="flex-1"
+              >
+                Apply
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => setTempColumnFilters(prev => ({
+                  ...prev,
+                  [column]: [...columnFilters[column]]
+                }))}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
           </Command>
         </PopoverContent>
       </Popover>
