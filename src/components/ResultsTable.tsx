@@ -195,3 +195,4 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       )}
     </Card>
   );
+};
