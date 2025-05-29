@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { VehicleData } from '@/types/vehicle';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { LogIn } from 'lucide-react';
+import { LogIn, Heart } from 'lucide-react';
 
 const Index = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData[]>([]);
@@ -146,7 +145,15 @@ const Index = () => {
               Verify vehicle information and insurance status using RDW Open Data
             </p>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => navigate('/saved')} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Heart className="h-4 w-4" />
+              <span className="hidden sm:inline">Saved Licenses</span>
+            </Button>
             <UserMenu />
           </div>
         </div>
