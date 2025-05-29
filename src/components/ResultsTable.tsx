@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,8 +7,10 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Check, ChevronDown, Filter } from 'lucide-react';
+import { Check, ChevronDown, Filter, Heart, Star } from 'lucide-react';
 import { VehicleData } from '@/types/vehicle';
+import { useSavedLicenses } from '@/hooks/useSavedLicenses';
+import { useAuth } from '@/contexts/AuthContext';
 import * as XLSX from 'xlsx';
 
 interface ResultsTableProps {
@@ -35,6 +36,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   progress
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { saveLicense, isLicenseSaved } = useSavedLicenses();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -82,6 +85,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       return column === 'datumEersteToelating' ? formatDate(value) : value;
     });
     return [...new Set(values)].sort();
+  };
+
+  const handleSaveLicense = async (item: VehicleData, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    await saveLicense(item);
   };
 
   const filteredData = useMemo(() => {
@@ -286,11 +298,21 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           <CardTitle className="text-xl sm:text-2xl text-blue-700">
             Verification Results
           </CardTitle>
-          {data.length > 0 && (
-            <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
-              Export to Excel
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => navigate('/saved')} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Star className="h-4 w-4" />
+              View Saved
             </Button>
-          )}
+            {data.length > 0 && (
+              <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
+                Export to Excel
+              </Button>
+            )}
+          </div>
         </div>
         
         {isLoading && (
@@ -333,7 +355,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             {filteredData.map((item, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                className={`border rounded-lg p-4 cursor-pointer transition-colors relative ${
                   item.status === 'error' ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'hover:bg-blue-50'
                 }`}
                 onClick={() => handleRowClick(item.kenteken)}
@@ -341,24 +363,37 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
                     <span className="font-mono font-bold text-blue-700">{item.kenteken}</span>
-                    <Badge
-                      variant={
-                        item.wamVerzekerd.toLowerCase() === 'ja' || 
-                        item.wamVerzekerd.toLowerCase() === 'yes'
-                          ? 'default'
-                          : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className={
-                        item.wamVerzekerd.toLowerCase() === 'ja' || 
-                        item.wamVerzekerd.toLowerCase() === 'yes'
-                          ? 'bg-green-100 text-green-800'
-                          : ''
-                      }
-                    >
-                      {item.wamVerzekerd}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {user && item.status === 'found' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => handleSaveLicense(item, e)}
+                          disabled={isLicenseSaved(item.kenteken)}
+                          className={`p-1 ${isLicenseSaved(item.kenteken) ? 'text-yellow-600' : 'text-gray-400 hover:text-yellow-600'}`}
+                        >
+                          <Heart className={`h-4 w-4 ${isLicenseSaved(item.kenteken) ? 'fill-current' : ''}`} />
+                        </Button>
+                      )}
+                      <Badge
+                        variant={
+                          item.wamVerzekerd.toLowerCase() === 'ja' || 
+                          item.wamVerzekerd.toLowerCase() === 'yes'
+                            ? 'default'
+                            : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
+                            ? 'destructive'
+                            : 'secondary'
+                        }
+                        className={
+                          item.wamVerzekerd.toLowerCase() === 'ja' || 
+                          item.wamVerzekerd.toLowerCase() === 'yes'
+                            ? 'bg-green-100 text-green-800'
+                            : ''
+                        }
+                      >
+                        {item.wamVerzekerd}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="text-sm text-gray-600">
                     <div><span className="font-medium">Make:</span> {item.merk}</div>
@@ -376,6 +411,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-gray-50">
+                  <th className="p-2 lg:p-3 text-left w-8"></th>
                   {[
                     { key: 'kenteken', label: 'License Plate' },
                     { key: 'merk', label: 'Make' },
@@ -414,6 +450,19 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     }`}
                     onClick={() => handleRowClick(item.kenteken)}
                   >
+                    <td className="p-2 lg:p-3">
+                      {user && item.status === 'found' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => handleSaveLicense(item, e)}
+                          disabled={isLicenseSaved(item.kenteken)}
+                          className={`p-1 ${isLicenseSaved(item.kenteken) ? 'text-yellow-600' : 'text-gray-400 hover:text-yellow-600'}`}
+                        >
+                          <Heart className={`h-4 w-4 ${isLicenseSaved(item.kenteken) ? 'fill-current' : ''}`} />
+                        </Button>
+                      )}
+                    </td>
                     <td className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm">
                       {item.kenteken}
                     </td>

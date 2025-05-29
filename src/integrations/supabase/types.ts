@@ -36,6 +36,105 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_licenses: {
+        Row: {
+          aantal_cilinders: number | null
+          aantal_zitplaatsen: number | null
+          added_at: string
+          added_by: string | null
+          apk_vervaldatum: string | null
+          catalogusprijs: string | null
+          cilinderinhoud: number | null
+          datum_eerste_toelating: string | null
+          datum_tenaamstelling: string | null
+          eerste_kleur: string | null
+          geluidsniveau_rijdend: number | null
+          geluidsniveau_stationair: number | null
+          geschorst: string | null
+          handelsbenaming: string | null
+          handelsbenaming_uitgebreid: string | null
+          id: string
+          inrichting: string | null
+          kenteken: string
+          massa_ledig_voertuig: number | null
+          massa_rijklaar: number | null
+          maximum_massa_trekken_geremd: number | null
+          maximum_massa_trekken_ongeremd: number | null
+          merk: string | null
+          milieuklasse_eg_goedkeuring_licht: string | null
+          toegestane_maximum_massa_voertuig: number | null
+          tweede_kleur: string | null
+          uitstoot_co2_gecombineerd: number | null
+          vermogen_massaverhouding: number | null
+          voertuigsoort: string | null
+          wam_verzekerd: string | null
+        }
+        Insert: {
+          aantal_cilinders?: number | null
+          aantal_zitplaatsen?: number | null
+          added_at?: string
+          added_by?: string | null
+          apk_vervaldatum?: string | null
+          catalogusprijs?: string | null
+          cilinderinhoud?: number | null
+          datum_eerste_toelating?: string | null
+          datum_tenaamstelling?: string | null
+          eerste_kleur?: string | null
+          geluidsniveau_rijdend?: number | null
+          geluidsniveau_stationair?: number | null
+          geschorst?: string | null
+          handelsbenaming?: string | null
+          handelsbenaming_uitgebreid?: string | null
+          id?: string
+          inrichting?: string | null
+          kenteken: string
+          massa_ledig_voertuig?: number | null
+          massa_rijklaar?: number | null
+          maximum_massa_trekken_geremd?: number | null
+          maximum_massa_trekken_ongeremd?: number | null
+          merk?: string | null
+          milieuklasse_eg_goedkeuring_licht?: string | null
+          toegestane_maximum_massa_voertuig?: number | null
+          tweede_kleur?: string | null
+          uitstoot_co2_gecombineerd?: number | null
+          vermogen_massaverhouding?: number | null
+          voertuigsoort?: string | null
+          wam_verzekerd?: string | null
+        }
+        Update: {
+          aantal_cilinders?: number | null
+          aantal_zitplaatsen?: number | null
+          added_at?: string
+          added_by?: string | null
+          apk_vervaldatum?: string | null
+          catalogusprijs?: string | null
+          cilinderinhoud?: number | null
+          datum_eerste_toelating?: string | null
+          datum_tenaamstelling?: string | null
+          eerste_kleur?: string | null
+          geluidsniveau_rijdend?: number | null
+          geluidsniveau_stationair?: number | null
+          geschorst?: string | null
+          handelsbenaming?: string | null
+          handelsbenaming_uitgebreid?: string | null
+          id?: string
+          inrichting?: string | null
+          kenteken?: string
+          massa_ledig_voertuig?: number | null
+          massa_rijklaar?: number | null
+          maximum_massa_trekken_geremd?: number | null
+          maximum_massa_trekken_ongeremd?: number | null
+          merk?: string | null
+          milieuklasse_eg_goedkeuring_licht?: string | null
+          toegestane_maximum_massa_voertuig?: number | null
+          tweede_kleur?: string | null
+          uitstoot_co2_gecombineerd?: number | null
+          vermogen_massaverhouding?: number | null
+          voertuigsoort?: string | null
+          wam_verzekerd?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
