@@ -24,6 +24,35 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     }
   };
 
+  const findLicensePlateColumn = (headers: string[]): number => {
+    // First, try exact matches (case insensitive)
+    const exactMatches = [
+      'licenseplate', 'license plate', 'kenteken', 'license_plate'
+    ];
+    
+    for (const match of exactMatches) {
+      const index = headers.findIndex(header => 
+        header.toLowerCase().trim() === match
+      );
+      if (index !== -1) return index;
+    }
+    
+    // Then try partial matches
+    const partialMatches = [
+      'license', 'kenteken', 'plate', 'nummerplaat'
+    ];
+    
+    for (const match of partialMatches) {
+      const index = headers.findIndex(header => 
+        header.toLowerCase().includes(match)
+      );
+      if (index !== -1) return index;
+    }
+    
+    // If no match found, return first column (index 0)
+    return 0;
+  };
+
   const handleSubmit = async () => {
     if (!selectedFile) {
       toast.error('Please select a file first');
@@ -33,25 +62,23 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     try {
       const text = await selectedFile.text();
       
-      // Simple CSV/TSV parsing - look for LicensePlate column
-      const lines = text.split('\n');
-      const headers = lines[0].split(/[,;\t]/).map(h => h.trim());
-      
-      const licensePlateIndex = headers.findIndex(header => 
-        header.toLowerCase().includes('licenseplate') || 
-        header.toLowerCase().includes('kenteken') ||
-        header.toLowerCase().includes('license')
-      );
-      
-      if (licensePlateIndex === -1) {
-        toast.error('Could not find LicensePlate column in the file');
+      // Simple CSV/TSV parsing
+      const lines = text.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        toast.error('File must contain at least a header row and one data row');
         return;
       }
+      
+      const headers = lines[0].split(/[,;\t]/).map(h => h.trim().replace(/"/g, ''));
+      console.log('Found headers:', headers);
+      
+      const licensePlateIndex = findLicensePlateColumn(headers);
+      console.log(`Using column ${licensePlateIndex}: "${headers[licensePlateIndex]}" for license plates`);
       
       const licensePlates: string[] = [];
       
       for (let i = 1; i < lines.length; i++) {
-        const columns = lines[i].split(/[,;\t]/);
+        const columns = lines[i].split(/[,;\t]/).map(col => col.trim().replace(/"/g, ''));
         const plate = columns[licensePlateIndex]?.trim();
         if (plate && plate.length > 0) {
           licensePlates.push(plate);
@@ -63,7 +90,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         return;
       }
       
-      toast.success(`Found ${licensePlates.length} license plates in file`);
+      toast.success(`Found ${licensePlates.length} license plates in column "${headers[licensePlateIndex]}"`);
       onSubmit(licensePlates);
     } catch (error) {
       console.error('Error reading file:', error);
@@ -78,7 +105,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           Upload Excel/CSV File
         </Label>
         <p className="text-sm text-gray-600 mt-1 mb-3">
-          File should contain a column named "LicensePlate" or "Kenteken"
+          File should contain license plates. Will automatically detect columns named "LicensePlate", "Kenteken", or use the first column.
         </p>
         <Input
           id="fileUpload"
