@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { UserMenu } from '@/components/UserMenu';
 import { useSavedLicenses } from '@/hooks/useSavedLicenses';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Trash2, Calendar, Car, CreditCard, Filter, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, Trash2, Calendar, Car, CreditCard, Filter, ChevronDown, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
@@ -32,6 +33,7 @@ const SavedLicenses = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof typeof savedLicenses[0]>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
     kenteken: [],
     merk: [],
@@ -46,6 +48,56 @@ const SavedLicenses = () => {
   const handleDelete = async (id: string, kenteken: string) => {
     if (window.confirm(`Are you sure you want to remove ${kenteken} from saved licenses?`)) {
       await deleteLicense(id);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) {
+      toast.error('Please select licenses to delete');
+      return;
+    }
+
+    const userOwnedIds = selectedIds.filter(id => {
+      const license = savedLicenses.find(l => l.id === id);
+      return license && license.added_by === user?.id;
+    });
+
+    if (userOwnedIds.length === 0) {
+      toast.error('You can only delete your own saved licenses');
+      return;
+    }
+
+    if (userOwnedIds.length !== selectedIds.length) {
+      toast.error('Some selected licenses cannot be deleted (not owned by you)');
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete ${selectedIds.length} selected license(s)?`)) {
+      try {
+        for (const id of selectedIds) {
+          await deleteLicense(id);
+        }
+        setSelectedIds([]);
+        toast.success(`Successfully deleted ${selectedIds.length} license(s)`);
+      } catch (error) {
+        toast.error('Error deleting some licenses');
+      }
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(filteredData.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
     }
   };
 
@@ -120,6 +172,7 @@ const SavedLicenses = () => {
 
   const clearAllFilters = () => {
     setSearchTerm('');
+    setSelectedIds([]);
     setColumnFilters({
       kenteken: [],
       merk: [],
@@ -132,8 +185,17 @@ const SavedLicenses = () => {
     });
   };
 
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData.map(item => ({
+  const exportToExcel = (selectedOnly = false) => {
+    const dataToExport = selectedOnly 
+      ? filteredData.filter(item => selectedIds.includes(item.id))
+      : filteredData;
+      
+    if (selectedOnly && dataToExport.length === 0) {
+      toast.error('Please select licenses to export');
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport.map(item => ({
       'License Plate': item.kenteken,
       'Make': item.merk,
       'Model': item.handelsbenaming,
@@ -148,7 +210,14 @@ const SavedLicenses = () => {
     
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Saved Licenses');
-    XLSX.writeFile(workbook, `saved_licenses_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const filename = selectedOnly 
+      ? `selected_licenses_${new Date().toISOString().split('T')[0]}.xlsx`
+      : `saved_licenses_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+    
+    if (selectedOnly) {
+      toast.success(`Exported ${dataToExport.length} selected license(s)`);
+    }
   };
 
   const handleRowClick = (kenteken: string) => {
@@ -282,6 +351,9 @@ const SavedLicenses = () => {
     );
   }
 
+  const isAllSelected = filteredData.length > 0 && selectedIds.length === filteredData.length;
+  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < filteredData.length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
@@ -328,9 +400,33 @@ const SavedLicenses = () => {
                 <CardTitle className="text-xl sm:text-2xl text-blue-700">
                   Saved Licenses ({filteredData.length})
                 </CardTitle>
-                <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
-                  Export to Excel
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {selectedIds.length > 0 && (
+                    <>
+                      <Button 
+                        onClick={() => exportToExcel(true)} 
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Export Selected ({selectedIds.length})
+                      </Button>
+                      <Button 
+                        onClick={handleBulkDelete} 
+                        variant="outline"
+                        size="sm"
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete Selected ({selectedIds.length})
+                      </Button>
+                    </>
+                  )}
+                  <Button onClick={() => exportToExcel(false)} className="bg-green-600 hover:bg-green-700">
+                    Export All to Excel
+                  </Button>
+                </div>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
@@ -352,12 +448,23 @@ const SavedLicenses = () => {
                 {filteredData.map((item) => (
                   <div
                     key={item.id}
-                    className="border rounded-lg p-4 cursor-pointer transition-colors hover:bg-blue-50 relative"
-                    onClick={() => handleRowClick(item.kenteken)}
+                    className="border rounded-lg p-4 transition-colors hover:bg-blue-50 relative"
                   >
                     <div className="space-y-2">
                       <div className="flex justify-between items-start">
-                        <span className="font-mono font-bold text-blue-700">{item.kenteken}</span>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={selectedIds.includes(item.id)}
+                            onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span 
+                            className="font-mono font-bold text-blue-700 cursor-pointer"
+                            onClick={() => handleRowClick(item.kenteken)}
+                          >
+                            {item.kenteken}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-2">
                           {user?.id === item.added_by && (
                             <Button
@@ -405,6 +512,13 @@ const SavedLicenses = () => {
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b bg-gray-50">
+                      <th className="p-2 lg:p-3 text-left w-8">
+                        <Checkbox
+                          checked={isAllSelected}
+                          indeterminate={isIndeterminate}
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </th>
                       <th className="p-2 lg:p-3 text-left w-8">Actions</th>
                       {[
                         { key: 'kenteken', label: 'License Plate' },
@@ -439,9 +553,14 @@ const SavedLicenses = () => {
                     {filteredData.map((item) => (
                       <tr
                         key={item.id}
-                        className="border-b hover:bg-blue-50 cursor-pointer transition-colors"
-                        onClick={() => handleRowClick(item.kenteken)}
+                        className="border-b hover:bg-blue-50 transition-colors"
                       >
+                        <td className="p-2 lg:p-3">
+                          <Checkbox
+                            checked={selectedIds.includes(item.id)}
+                            onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                          />
+                        </td>
                         <td className="p-2 lg:p-3">
                           {user?.id === item.added_by && (
                             <Button
@@ -457,7 +576,10 @@ const SavedLicenses = () => {
                             </Button>
                           )}
                         </td>
-                        <td className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm">
+                        <td 
+                          className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm cursor-pointer"
+                          onClick={() => handleRowClick(item.kenteken)}
+                        >
                           {item.kenteken}
                         </td>
                         <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>

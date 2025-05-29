@@ -126,6 +126,31 @@ export const useSavedLicenses = () => {
     }
   };
 
+  const bulkDeleteLicenses = async (ids: string[]) => {
+    if (!user) {
+      toast.error('You must be logged in to delete licenses');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('saved_licenses')
+        .delete()
+        .in('id', ids)
+        .eq('added_by', user.id); // Only allow deletion of user's own licenses
+
+      if (error) throw error;
+
+      toast.success(`${ids.length} license plates removed`);
+      fetchSavedLicenses(); // Refresh the list
+      return true;
+    } catch (error) {
+      console.error('Error bulk deleting licenses:', error);
+      toast.error('Failed to remove license plates');
+      return false;
+    }
+  };
+
   const isLicenseSaved = (kenteken: string) => {
     return savedLicenses.some(license => license.kenteken === kenteken);
   };
@@ -141,6 +166,7 @@ export const useSavedLicenses = () => {
     loading,
     saveLicense,
     deleteLicense,
+    bulkDeleteLicenses,
     isLicenseSaved,
     fetchSavedLicenses
   };
