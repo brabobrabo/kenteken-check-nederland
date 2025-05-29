@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +26,7 @@ const Index = () => {
         if (!plate) continue;
         
         try {
-          const response = await fetch(`https://opendata.rdw.nl/resource/sixj-dsqw.json?kenteken=${plate}`);
+          const response = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${plate}`);
           const data = await response.json();
           
           if (data && data.length > 0) {
