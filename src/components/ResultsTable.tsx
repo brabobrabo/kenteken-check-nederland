@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { VehicleData } from '@/types/vehicle';
 import * as XLSX from 'xlsx';
 
@@ -12,6 +13,17 @@ interface ResultsTableProps {
   data: VehicleData[];
   isLoading: boolean;
   progress: number;
+}
+
+interface ColumnFilters {
+  kenteken: string;
+  merk: string;
+  handelsbenaming: string;
+  apkVervaldatum: string;
+  catalogusprijs: string;
+  datumEersteToelating: string;
+  wamVerzekerd: string;
+  geschorst: string;
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -22,13 +34,59 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
+    kenteken: '',
+    merk: '',
+    handelsbenaming: '',
+    apkVervaldatum: '',
+    catalogusprijs: '',
+    datumEersteToelating: '',
+    wamVerzekerd: '',
+    geschorst: ''
+  });
+
+  const formatDate = (dateString: string) => {
+    if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
+      return dateString;
+    }
+    
+    try {
+      // Handle YYYYMMDD format
+      if (dateString.length === 8 && /^\d{8}$/.test(dateString)) {
+        const year = dateString.substring(0, 4);
+        const month = dateString.substring(4, 6);
+        const day = dateString.substring(6, 8);
+        return `${day}-${month}-${year}`;
+      }
+      
+      // Handle other date formats
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('nl-NL');
+      }
+      
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
 
   const filteredData = useMemo(() => {
-    let filtered = data.filter(item =>
-      Object.values(item).some(value =>
+    let filtered = data.filter(item => {
+      // Global search
+      const matchesGlobalSearch = Object.values(item).some(value =>
         value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
+      );
+      
+      // Column-specific filters
+      const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValue]) => {
+        if (!filterValue) return true;
+        const itemValue = item[key as keyof VehicleData].toString().toLowerCase();
+        return itemValue.includes(filterValue.toLowerCase());
+      });
+      
+      return matchesGlobalSearch && matchesColumnFilters;
+    });
 
     return filtered.sort((a, b) => {
       const aVal = a[sortColumn].toString();
@@ -36,7 +94,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       const result = aVal.localeCompare(bVal);
       return sortDirection === 'asc' ? result : -result;
     });
-  }, [data, searchTerm, sortColumn, sortDirection]);
+  }, [data, searchTerm, sortColumn, sortDirection, columnFilters]);
 
   const handleSort = (column: keyof VehicleData) => {
     if (column === sortColumn) {
@@ -47,6 +105,27 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
+  const handleColumnFilterChange = (column: keyof ColumnFilters, value: string) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: value
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setColumnFilters({
+      kenteken: '',
+      merk: '',
+      handelsbenaming: '',
+      apkVervaldatum: '',
+      catalogusprijs: '',
+      datumEersteToelating: '',
+      wamVerzekerd: '',
+      geschorst: ''
+    });
+  };
+
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredData.map(item => ({
       'License Plate': item.kenteken,
@@ -54,7 +133,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       'Model': item.handelsbenaming,
       'MOT Expiration': item.apkVervaldatum,
       'Catalog Price': item.catalogusprijs,
-      'First Admission': item.datumEersteToelating,
+      'First Admission': formatDate(item.datumEersteToelating),
       'WAM Insured': item.wamVerzekerd,
       'Suspended': item.geschorst,
       'Status': item.status
@@ -103,11 +182,14 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               </Badge>
             </div>
             <Input
-              placeholder="Search results..."
+              placeholder="Global search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
+            <Button onClick={clearAllFilters} variant="outline" size="sm">
+              Clear Filters
+            </Button>
           </div>
         )}
       </CardHeader>
@@ -128,17 +210,27 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     { key: 'wamVerzekerd', label: 'WAM Insured' },
                     { key: 'geschorst', label: 'Suspended' }
                   ].map(({ key, label }) => (
-                    <th
-                      key={key}
-                      className="text-left p-3 cursor-pointer hover:bg-gray-100 font-semibold"
-                      onClick={() => handleSort(key as keyof VehicleData)}
-                    >
-                      {label}
-                      {sortColumn === key && (
-                        <span className="ml-1">
-                          {sortDirection === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
+                    <th key={key} className="p-3 text-left">
+                      <div className="space-y-2">
+                        <div
+                          className="cursor-pointer hover:bg-gray-100 font-semibold flex items-center"
+                          onClick={() => handleSort(key as keyof VehicleData)}
+                        >
+                          {label}
+                          {sortColumn === key && (
+                            <span className="ml-1">
+                              {sortDirection === 'asc' ? '↑' : '↓'}
+                            </span>
+                          )}
+                        </div>
+                        <Input
+                          placeholder={`Filter ${label.toLowerCase()}...`}
+                          value={columnFilters[key as keyof ColumnFilters]}
+                          onChange={(e) => handleColumnFilterChange(key as keyof ColumnFilters, e.target.value)}
+                          className="text-xs h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -158,7 +250,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     <td className="p-3">{item.handelsbenaming}</td>
                     <td className="p-3">{item.apkVervaldatum}</td>
                     <td className="p-3">{item.catalogusprijs}</td>
-                    <td className="p-3">{item.datumEersteToelating}</td>
+                    <td className="p-3">{formatDate(item.datumEersteToelating)}</td>
                     <td className="p-3">
                       <Badge
                         variant={
@@ -186,9 +278,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             </table>
           </div>
           
-          {filteredData.length === 0 && searchTerm && (
+          {filteredData.length === 0 && (searchTerm || Object.values(columnFilters).some(f => f)) && (
             <div className="text-center py-8 text-gray-500">
-              No results found for "{searchTerm}"
+              No results found with current filters
             </div>
           )}
         </CardContent>
