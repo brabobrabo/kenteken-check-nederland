@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check, ChevronDown, Filter } from 'lucide-react';
 import { VehicleData } from '@/types/vehicle';
 import * as XLSX from 'xlsx';
 
@@ -16,14 +18,14 @@ interface ResultsTableProps {
 }
 
 interface ColumnFilters {
-  kenteken: string;
-  merk: string;
-  handelsbenaming: string;
-  apkVervaldatum: string;
-  catalogusprijs: string;
-  datumEersteToelating: string;
-  wamVerzekerd: string;
-  geschorst: string;
+  kenteken: string[];
+  merk: string[];
+  handelsbenaming: string[];
+  apkVervaldatum: string[];
+  catalogusprijs: string[];
+  datumEersteToelating: string[];
+  wamVerzekerd: string[];
+  geschorst: string[];
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -35,14 +37,14 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
-    kenteken: '',
-    merk: '',
-    handelsbenaming: '',
-    apkVervaldatum: '',
-    catalogusprijs: '',
-    datumEersteToelating: '',
-    wamVerzekerd: '',
-    geschorst: ''
+    kenteken: [],
+    merk: [],
+    handelsbenaming: [],
+    apkVervaldatum: [],
+    catalogusprijs: [],
+    datumEersteToelating: [],
+    wamVerzekerd: [],
+    geschorst: []
   });
 
   const formatDate = (dateString: string) => {
@@ -71,6 +73,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
+  // Get unique values for each column
+  const getUniqueValues = (column: keyof VehicleData) => {
+    const values = data.map(item => {
+      const value = item[column].toString();
+      return column === 'datumEersteToelating' ? formatDate(value) : value;
+    });
+    return [...new Set(values)].sort();
+  };
+
   const filteredData = useMemo(() => {
     let filtered = data.filter(item => {
       // Global search
@@ -79,10 +90,12 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       );
       
       // Column-specific filters
-      const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValue]) => {
-        if (!filterValue) return true;
-        const itemValue = item[key as keyof VehicleData].toString().toLowerCase();
-        return itemValue.includes(filterValue.toLowerCase());
+      const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValues]) => {
+        if (filterValues.length === 0) return true;
+        const itemValue = key === 'datumEersteToelating' 
+          ? formatDate(item[key as keyof VehicleData].toString())
+          : item[key as keyof VehicleData].toString();
+        return filterValues.includes(itemValue);
       });
       
       return matchesGlobalSearch && matchesColumnFilters;
@@ -105,25 +118,42 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  const handleColumnFilterChange = (column: keyof ColumnFilters, value: string) => {
+  const handleFilterChange = (column: keyof ColumnFilters, value: string, checked: boolean) => {
     setColumnFilters(prev => ({
       ...prev,
-      [column]: value
+      [column]: checked 
+        ? [...prev[column], value]
+        : prev[column].filter(v => v !== value)
     }));
   };
 
   const clearAllFilters = () => {
     setSearchTerm('');
     setColumnFilters({
-      kenteken: '',
-      merk: '',
-      handelsbenaming: '',
-      apkVervaldatum: '',
-      catalogusprijs: '',
-      datumEersteToelating: '',
-      wamVerzekerd: '',
-      geschorst: ''
+      kenteken: [],
+      merk: [],
+      handelsbenaming: [],
+      apkVervaldatum: [],
+      catalogusprijs: [],
+      datumEersteToelating: [],
+      wamVerzekerd: [],
+      geschorst: []
     });
+  };
+
+  const selectAllForColumn = (column: keyof ColumnFilters) => {
+    const uniqueValues = getUniqueValues(column);
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: uniqueValues
+    }));
+  };
+
+  const deselectAllForColumn = (column: keyof ColumnFilters) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: []
+    }));
   };
 
   const exportToExcel = () => {
@@ -146,6 +176,79 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const foundCount = data.filter(item => item.status === 'found').length;
   const errorCount = data.filter(item => item.status === 'error').length;
+
+  const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
+    const uniqueValues = getUniqueValues(column);
+    const selectedValues = columnFilters[column];
+    const [filterSearch, setFilterSearch] = useState('');
+
+    const filteredValues = uniqueValues.filter(value =>
+      value.toLowerCase().includes(filterSearch.toLowerCase())
+    );
+
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 border-dashed"
+          >
+            <Filter className="h-4 w-4 mr-1" />
+            {selectedValues.length > 0 ? `${selectedValues.length} selected` : 'Filter'}
+            <ChevronDown className="h-4 w-4 ml-1" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-0" align="start">
+          <Command>
+            <CommandInput 
+              placeholder={`Search ${label.toLowerCase()}...`}
+              value={filterSearch}
+              onValueChange={setFilterSearch}
+            />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup>
+                <CommandItem
+                  onSelect={() => selectAllForColumn(column)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>Select All</span>
+                  </div>
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => deselectAllForColumn(column)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>Deselect All</span>
+                  </div>
+                </CommandItem>
+                <div className="border-t my-1" />
+                {filteredValues.map((value) => (
+                  <CommandItem
+                    key={value}
+                    onSelect={() => handleFilterChange(column, value, !selectedValues.includes(value))}
+                    className="cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border border-gray-300 rounded flex items-center justify-center">
+                        {selectedValues.includes(value) && (
+                          <Check className="h-3 w-3 text-blue-600" />
+                        )}
+                      </div>
+                      <span className="text-sm">{value}</span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  };
 
   return (
     <Card className="shadow-lg">
@@ -223,13 +326,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                             </span>
                           )}
                         </div>
-                        <Input
-                          placeholder={`Filter ${label.toLowerCase()}...`}
-                          value={columnFilters[key as keyof ColumnFilters]}
-                          onChange={(e) => handleColumnFilterChange(key as keyof ColumnFilters, e.target.value)}
-                          className="text-xs h-8"
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        <FilterDropdown column={key as keyof ColumnFilters} label={label} />
                       </div>
                     </th>
                   ))}
@@ -278,7 +375,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             </table>
           </div>
           
-          {filteredData.length === 0 && (searchTerm || Object.values(columnFilters).some(f => f)) && (
+          {filteredData.length === 0 && (searchTerm || Object.values(columnFilters).some(f => f.length > 0)) && (
             <div className="text-center py-8 text-gray-500">
               No results found with current filters
             </div>
