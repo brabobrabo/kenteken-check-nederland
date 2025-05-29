@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -322,7 +323,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           </CardTitle>
           {data.length > 0 && (
             <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
-              📊 Export to Excel
+              Export to Excel
             </Button>
           )}
         </div>
