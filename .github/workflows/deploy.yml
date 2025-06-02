@@ -1,3 +1,4 @@
+
 name: GitHub Pages
 
 on:
@@ -32,5 +33,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          cname: aidrivencoder.github.io
           publish_dir: ./dist
