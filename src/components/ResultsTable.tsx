@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +12,8 @@ import { VehicleData } from '@/types/vehicle';
 import { useSavedLicenses } from '@/hooks/useSavedLicenses';
 import { useAuth } from '@/contexts/AuthContext';
 import * as XLSX from 'xlsx';
+import { ColumnSettings } from './ColumnSettings';
+import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
 
 interface ResultsTableProps {
   data: VehicleData[];
@@ -58,6 +59,28 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     exportIndicator: [],
     tenaamstellenMogelijk: []
   });
+
+  const defaultColumns: ColumnConfig[] = [
+    { key: 'kenteken', label: 'License Plate', visible: true },
+    { key: 'merk', label: 'Make', visible: true },
+    { key: 'handelsbenaming', label: 'Model', visible: true },
+    { key: 'apkVervaldatum', label: 'MOT Expiration', visible: true },
+    { key: 'datumEersteToelating', label: 'First Admission', visible: true },
+    { key: 'wamVerzekerd', label: 'WAM Insured', visible: true },
+    { key: 'geschorst', label: 'Suspended', visible: true },
+    { key: 'datumTenaamstelling', label: 'Registration Date', visible: true },
+    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
+    { key: 'exportIndicator', label: 'Export Indicator', visible: true },
+    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true }
+  ];
+
+  const {
+    columns,
+    moveColumn,
+    toggleColumnVisibility,
+    resetColumns,
+    visibleColumns
+  } = useColumnReorder(defaultColumns, 'results-table-columns');
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
@@ -164,21 +187,51 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData.map(item => ({
-      'License Plate': item.kenteken,
-      'Make': item.merk,
-      'Model': item.handelsbenaming,
-      'MOT Expiration': item.apkVervaldatum,
-      'First Admission': formatDate(item.datumEersteToelating),
-      'WAM Insured': item.wamVerzekerd,
-      'Suspended': item.geschorst,
-      'Registration Date': formatDate(item.datumTenaamstelling),
-      'First NL Registration': formatDate(item.datumEersteTenaamstellingInNederlandDt),
-      'Export Indicator': item.exportIndicator,
-      'Registration Possible': item.tenaamstellenMogelijk,
-      'Status': item.status
-    })));
+    const orderedData = filteredData.map(item => {
+      const orderedItem: any = {};
+      visibleColumns.forEach(column => {
+        const key = column.key as keyof VehicleData;
+        switch (key) {
+          case 'kenteken':
+            orderedItem['License Plate'] = item.kenteken;
+            break;
+          case 'merk':
+            orderedItem['Make'] = item.merk;
+            break;
+          case 'handelsbenaming':
+            orderedItem['Model'] = item.handelsbenaming;
+            break;
+          case 'apkVervaldatum':
+            orderedItem['MOT Expiration'] = item.apkVervaldatum;
+            break;
+          case 'datumEersteToelating':
+            orderedItem['First Admission'] = formatDate(item.datumEersteToelating);
+            break;
+          case 'wamVerzekerd':
+            orderedItem['WAM Insured'] = item.wamVerzekerd;
+            break;
+          case 'geschorst':
+            orderedItem['Suspended'] = item.geschorst;
+            break;
+          case 'datumTenaamstelling':
+            orderedItem['Registration Date'] = formatDate(item.datumTenaamstelling);
+            break;
+          case 'datumEersteTenaamstellingInNederlandDt':
+            orderedItem['First NL Registration'] = formatDate(item.datumEersteTenaamstellingInNederlandDt);
+            break;
+          case 'exportIndicator':
+            orderedItem['Export Indicator'] = item.exportIndicator;
+            break;
+          case 'tenaamstellenMogelijk':
+            orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
+            break;
+        }
+      });
+      orderedItem['Status'] = item.status;
+      return orderedItem;
+    });
     
+    const worksheet = XLSX.utils.json_to_sheet(orderedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Vehicle Data');
     XLSX.writeFile(workbook, `vehicle_verification_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -328,9 +381,17 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               View Saved
             </Button>
             {data.length > 0 && (
-              <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
-                Export to Excel
-              </Button>
+              <>
+                <ColumnSettings
+                  columns={columns}
+                  onMoveColumn={moveColumn}
+                  onToggleVisibility={toggleColumnVisibility}
+                  onReset={resetColumns}
+                />
+                <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
+                  Export to Excel
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -433,19 +494,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="p-2 lg:p-3 text-left w-8"></th>
-                  {[
-                    { key: 'kenteken', label: 'License Plate' },
-                    { key: 'merk', label: 'Make' },
-                    { key: 'handelsbenaming', label: 'Model' },
-                    { key: 'apkVervaldatum', label: 'MOT Expiration' },
-                    { key: 'datumEersteToelating', label: 'First Admission' },
-                    { key: 'wamVerzekerd', label: 'WAM Insured' },
-                    { key: 'geschorst', label: 'Suspended' },
-                    { key: 'datumTenaamstelling', label: 'Registration Date' },
-                    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration' },
-                    { key: 'exportIndicator', label: 'Export Indicator' },
-                    { key: 'tenaamstellenMogelijk', label: 'Registration Possible' }
-                  ].map(({ key, label }) => (
+                  {visibleColumns.map(({ key, label }) => (
                     <th key={key} className="p-2 lg:p-3 text-left">
                       <div className="space-y-2">
                         <div
@@ -487,38 +536,63 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                         </Button>
                       )}
                     </td>
-                    <td className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm">
-                      {item.kenteken}
-                    </td>
-                    <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>
-                    <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.handelsbenaming}</td>
-                    <td className="p-2 lg:p-3 text-sm">{item.apkVervaldatum}</td>
-                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteToelating)}</td>
-                    <td className="p-2 lg:p-3">
-                      <Badge
-                        variant={
-                          item.wamVerzekerd.toLowerCase() === 'ja' || 
-                          item.wamVerzekerd.toLowerCase() === 'yes'
-                            ? 'default'
-                            : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                        className={
-                          item.wamVerzekerd.toLowerCase() === 'ja' || 
-                          item.wamVerzekerd.toLowerCase() === 'yes'
-                            ? 'bg-green-100 text-green-800'
-                            : ''
-                        }
-                      >
-                        {item.wamVerzekerd}
-                      </Badge>
-                    </td>
-                    <td className="p-2 lg:p-3 text-sm">{item.geschorst}</td>
-                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumTenaamstelling)}</td>
-                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteTenaamstellingInNederlandDt)}</td>
-                    <td className="p-2 lg:p-3 text-sm">{item.exportIndicator}</td>
-                    <td className="p-2 lg:p-3 text-sm">{item.tenaamstellenMogelijk}</td>
+                    {visibleColumns.map(({ key }) => {
+                      const cellKey = key as keyof VehicleData;
+                      let cellContent;
+                      
+                      switch (cellKey) {
+                        case 'kenteken':
+                          cellContent = (
+                            <span className="font-mono font-bold text-blue-700 text-sm">
+                              {item.kenteken}
+                            </span>
+                          );
+                          break;
+                        case 'wamVerzekerd':
+                          cellContent = (
+                            <Badge
+                              variant={
+                                item.wamVerzekerd.toLowerCase() === 'ja' || 
+                                item.wamVerzekerd.toLowerCase() === 'yes'
+                                  ? 'default'
+                                  : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
+                              className={
+                                item.wamVerzekerd.toLowerCase() === 'ja' || 
+                                item.wamVerzekerd.toLowerCase() === 'yes'
+                                  ? 'bg-green-100 text-green-800'
+                                  : ''
+                              }
+                            >
+                              {item.wamVerzekerd}
+                            </Badge>
+                          );
+                          break;
+                        case 'datumEersteToelating':
+                        case 'datumTenaamstelling':
+                        case 'datumEersteTenaamstellingInNederlandDt':
+                          cellContent = (
+                            <span className="text-sm">
+                              {formatDate(item[cellKey])}
+                            </span>
+                          );
+                          break;
+                        default:
+                          cellContent = (
+                            <span className="text-sm truncate max-w-0">
+                              {item[cellKey]}
+                            </span>
+                          );
+                      }
+                      
+                      return (
+                        <td key={key} className="p-2 lg:p-3">
+                          {cellContent}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>

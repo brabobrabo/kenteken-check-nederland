@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Trash2, Calendar, Car, CreditCard, Filter, ChevronDown, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { ColumnSettings } from '@/components/ColumnSettings';
+import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
 
 interface ColumnFilters {
   kenteken: string[];
@@ -27,6 +29,20 @@ interface ColumnFilters {
   exportIndicator: string[];
   tenaamstellenMogelijk: string[];
 }
+
+const defaultColumns: ColumnConfig[] = [
+  { key: 'kenteken', label: 'License Plate', visible: true },
+  { key: 'merk', label: 'Make', visible: true },
+  { key: 'handelsbenaming', label: 'Model', visible: true },
+  { key: 'apk_vervaldatum', label: 'MOT Expiry', visible: true },
+  { key: 'datum_eerste_toelating', label: 'First Registration', visible: true },
+  { key: 'wam_verzekerd', label: 'WAM Insured', visible: true },
+  { key: 'geschorst', label: 'Suspended', visible: true },
+  { key: 'datum_tenaamstelling', label: 'Registration Date', visible: true },
+  { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
+  { key: 'exportIndicator', label: 'Export Indicator', visible: true },
+  { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true }
+];
 
 const SavedLicenses = () => {
   const navigate = useNavigate();
@@ -49,6 +65,14 @@ const SavedLicenses = () => {
     exportIndicator: [],
     tenaamstellenMogelijk: []
   });
+
+  const {
+    columns,
+    moveColumn,
+    toggleColumnVisibility,
+    resetColumns,
+    visibleColumns
+  } = useColumnReorder(defaultColumns, 'saved-licenses-columns');
 
   const handleDelete = async (id: string, kenteken: string) => {
     if (window.confirm(`Are you sure you want to remove ${kenteken} from saved licenses?`)) {
@@ -205,22 +229,52 @@ const SavedLicenses = () => {
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport.map(item => ({
-      'License Plate': item.kenteken,
-      'Make': item.merk,
-      'Model': item.handelsbenaming,
-      'MOT Expiry': item.apk_vervaldatum,
-      'First Registration': formatDate(item.datum_eerste_toelating),
-      'WAM Insured': item.wam_verzekerd,
-      'Suspended': item.geschorst,
-      'Registration Date': formatDate(item.datum_tenaamstelling),
-      'First NL Registration': formatDate(item.datumEersteTenaamstellingInNederlandDt),
-      'Export Indicator': item.exportIndicator,
-      'Registration Possible': item.tenaamstellenMogelijk,
-      'Added By': item.added_by,
-      'Added At': new Date(item.added_at).toLocaleDateString()
-    })));
+    const orderedData = dataToExport.map(item => {
+      const orderedItem: any = {};
+      visibleColumns.forEach(column => {
+        const key = column.key;
+        switch (key) {
+          case 'kenteken':
+            orderedItem['License Plate'] = item.kenteken;
+            break;
+          case 'merk':
+            orderedItem['Make'] = item.merk;
+            break;
+          case 'handelsbenaming':
+            orderedItem['Model'] = item.handelsbenaming;
+            break;
+          case 'apk_vervaldatum':
+            orderedItem['MOT Expiry'] = item.apk_vervaldatum;
+            break;
+          case 'datum_eerste_toelating':
+            orderedItem['First Registration'] = formatDate(item.datum_eerste_toelating);
+            break;
+          case 'wam_verzekerd':
+            orderedItem['WAM Insured'] = item.wam_verzekerd;
+            break;
+          case 'geschorst':
+            orderedItem['Suspended'] = item.geschorst;
+            break;
+          case 'datum_tenaamstelling':
+            orderedItem['Registration Date'] = formatDate(item.datum_tenaamstelling);
+            break;
+          case 'datumEersteTenaamstellingInNederlandDt':
+            orderedItem['First NL Registration'] = formatDate(item.datumEersteTenaamstellingInNederlandDt);
+            break;
+          case 'exportIndicator':
+            orderedItem['Export Indicator'] = item.exportIndicator;
+            break;
+          case 'tenaamstellenMogelijk':
+            orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
+            break;
+        }
+      });
+      orderedItem['Added By'] = item.added_by;
+      orderedItem['Added At'] = new Date(item.added_at).toLocaleDateString();
+      return orderedItem;
+    });
     
+    const worksheet = XLSX.utils.json_to_sheet(orderedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Saved Licenses');
     const filename = selectedOnly 
@@ -436,6 +490,12 @@ const SavedLicenses = () => {
                       </Button>
                     </>
                   )}
+                  <ColumnSettings
+                    columns={columns}
+                    onMoveColumn={moveColumn}
+                    onToggleVisibility={toggleColumnVisibility}
+                    onReset={resetColumns}
+                  />
                   <Button onClick={() => exportToExcel(false)} className="bg-green-600 hover:bg-green-700">
                     Export All to Excel
                   </Button>
@@ -540,19 +600,7 @@ const SavedLicenses = () => {
                         </div>
                       </th>
                       <th className="p-2 lg:p-3 text-left w-8">Actions</th>
-                      {[
-                        { key: 'kenteken', label: 'License Plate' },
-                        { key: 'merk', label: 'Make' },
-                        { key: 'handelsbenaming', label: 'Model' },
-                        { key: 'apk_vervaldatum', label: 'MOT Expiry' },
-                        { key: 'datum_eerste_toelating', label: 'First Registration' },
-                        { key: 'wam_verzekerd', label: 'WAM Insured' },
-                        { key: 'geschorst', label: 'Suspended' },
-                        { key: 'datum_tenaamstelling', label: 'Registration Date' },
-                        { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration' },
-                        { key: 'exportIndicator', label: 'Export Indicator' },
-                        { key: 'tenaamstellenMogelijk', label: 'Registration Possible' }
-                      ].map(({ key, label }) => (
+                      {visibleColumns.map(({ key, label }) => (
                         <th key={key} className="p-2 lg:p-3 text-left">
                           <div className="space-y-2">
                             <div
@@ -599,39 +647,63 @@ const SavedLicenses = () => {
                             </Button>
                           )}
                         </td>
-                        <td 
-                          className="p-2 lg:p-3 font-mono font-bold text-blue-700 text-sm cursor-pointer"
-                          onClick={() => handleRowClick(item.kenteken)}
-                        >
-                          {item.kenteken}
-                        </td>
-                        <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>
-                        <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.handelsbenaming}</td>
-                        <td className="p-2 lg:p-3 text-sm">{item.apk_vervaldatum}</td>
-                        <td className="p-2 lg:p-3 text-sm">{formatDate(item.datum_eerste_toelating)}</td>
-                        <td className="p-2 lg:p-3">
-                          <Badge
-                            variant={
-                              item.wam_verzekerd?.toLowerCase() === 'ja'
-                                ? 'default'
-                                : item.wam_verzekerd === 'Unknown' || item.wam_verzekerd === 'Not Found'
-                                ? 'destructive'
-                                : 'secondary'
-                            }
-                            className={
-                              item.wam_verzekerd?.toLowerCase() === 'ja'
-                                ? 'bg-green-100 text-green-800'
-                                : ''
-                            }
-                          >
-                            {item.wam_verzekerd || 'Unknown'}
-                          </Badge>
-                        </td>
-                        <td className="p-2 lg:p-3 text-sm">{item.geschorst}</td>
-                        <td className="p-2 lg:p-3 text-sm">{formatDate(item.datum_tenaamstelling)}</td>
-                        <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteTenaamstellingInNederlandDt)}</td>
-                        <td className="p-2 lg:p-3 text-sm">{item.exportIndicator}</td>
-                        <td className="p-2 lg:p-3 text-sm">{item.tenaamstellenMogelijk}</td>
+                        {visibleColumns.map(({ key }) => {
+                          let cellContent;
+                          
+                          switch (key) {
+                            case 'kenteken':
+                              cellContent = (
+                                <span 
+                                  className="font-mono font-bold text-blue-700 text-sm cursor-pointer"
+                                  onClick={() => handleRowClick(item.kenteken)}
+                                >
+                                  {item.kenteken}
+                                </span>
+                              );
+                              break;
+                            case 'wam_verzekerd':
+                              cellContent = (
+                                <Badge
+                                  variant={
+                                    item.wam_verzekerd?.toLowerCase() === 'ja'
+                                      ? 'default'
+                                      : item.wam_verzekerd === 'Unknown' || item.wam_verzekerd === 'Not Found'
+                                      ? 'destructive'
+                                      : 'secondary'
+                                  }
+                                  className={
+                                    item.wam_verzekerd?.toLowerCase() === 'ja'
+                                      ? 'bg-green-100 text-green-800'
+                                      : ''
+                                  }
+                                >
+                                  {item.wam_verzekerd || 'Unknown'}
+                                </Badge>
+                              );
+                              break;
+                            case 'datum_eerste_toelating':
+                            case 'datum_tenaamstelling':
+                            case 'datumEersteTenaamstellingInNederlandDt':
+                              cellContent = (
+                                <span className="text-sm">
+                                  {formatDate(item[key as keyof typeof item]?.toString() || '')}
+                                </span>
+                              );
+                              break;
+                            default:
+                              cellContent = (
+                                <span className="text-sm truncate max-w-0">
+                                  {item[key as keyof typeof item]}
+                                </span>
+                              );
+                          }
+                          
+                          return (
+                            <td key={key} className="p-2 lg:p-3">
+                              {cellContent}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
