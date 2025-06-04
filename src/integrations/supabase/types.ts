@@ -48,6 +48,7 @@ export type Database = {
           datum_eerste_toelating: string | null
           datum_tenaamstelling: string | null
           eerste_kleur: string | null
+          export_indicator: string | null
           geluidsniveau_rijdend: number | null
           geluidsniveau_stationair: number | null
           geschorst: string | null
@@ -62,6 +63,7 @@ export type Database = {
           maximum_massa_trekken_ongeremd: number | null
           merk: string | null
           milieuklasse_eg_goedkeuring_licht: string | null
+          tenaamstellen_mogelijk: string | null
           toegestane_maximum_massa_voertuig: number | null
           tweede_kleur: string | null
           uitstoot_co2_gecombineerd: number | null
@@ -80,6 +82,7 @@ export type Database = {
           datum_eerste_toelating?: string | null
           datum_tenaamstelling?: string | null
           eerste_kleur?: string | null
+          export_indicator?: string | null
           geluidsniveau_rijdend?: number | null
           geluidsniveau_stationair?: number | null
           geschorst?: string | null
@@ -94,6 +97,7 @@ export type Database = {
           maximum_massa_trekken_ongeremd?: number | null
           merk?: string | null
           milieuklasse_eg_goedkeuring_licht?: string | null
+          tenaamstellen_mogelijk?: string | null
           toegestane_maximum_massa_voertuig?: number | null
           tweede_kleur?: string | null
           uitstoot_co2_gecombineerd?: number | null
@@ -112,6 +116,7 @@ export type Database = {
           datum_eerste_toelating?: string | null
           datum_tenaamstelling?: string | null
           eerste_kleur?: string | null
+          export_indicator?: string | null
           geluidsniveau_rijdend?: number | null
           geluidsniveau_stationair?: number | null
           geschorst?: string | null
@@ -126,6 +131,7 @@ export type Database = {
           maximum_massa_trekken_ongeremd?: number | null
           merk?: string | null
           milieuklasse_eg_goedkeuring_licht?: string | null
+          tenaamstellen_mogelijk?: string | null
           toegestane_maximum_massa_voertuig?: number | null
           tweede_kleur?: string | null
           uitstoot_co2_gecombineerd?: number | null

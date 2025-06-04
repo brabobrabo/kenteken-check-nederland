@@ -77,7 +77,9 @@ export const useSavedLicenses = () => {
           uitstoot_co2_gecombineerd,
           milieuklasse_eg_goedkeuring_licht,
           geluidsniveau_stationair,
-          geluidsniveau_rijdend
+          geluidsniveau_rijdend,
+          export_indicator,
+          tenaamstellen_mogelijk
         `)
         .order('added_at', { ascending: false });
 
@@ -87,8 +89,8 @@ export const useSavedLicenses = () => {
       const mappedData = (data || []).map(item => ({
         ...item,
         datumEersteTenaamstellingInNederlandDt: item.datum_tenaamstelling || null,
-        exportIndicator: 'Unknown',
-        tenaamstellenMogelijk: 'Unknown'
+        exportIndicator: item.export_indicator || 'Unknown',
+        tenaamstellenMogelijk: item.tenaamstellen_mogelijk || 'Unknown'
       }));
       
       setSavedLicenses(mappedData);
@@ -116,6 +118,8 @@ export const useSavedLicenses = () => {
         wam_verzekerd: vehicleData.wamVerzekerd,
         geschorst: vehicleData.geschorst,
         datum_tenaamstelling: vehicleData.datumTenaamstelling,
+        export_indicator: vehicleData.exportIndicator,
+        tenaamstellen_mogelijk: vehicleData.tenaamstellenMogelijk,
         added_by: user.id,
         ...additionalData
       };
