@@ -24,7 +24,6 @@ interface ColumnFilters {
   merk: string[];
   handelsbenaming: string[];
   apkVervaldatum: string[];
-  catalogusprijs: string[];
   datumEersteToelating: string[];
   wamVerzekerd: string[];
   geschorst: string[];
@@ -50,7 +49,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     merk: [],
     handelsbenaming: [],
     apkVervaldatum: [],
-    catalogusprijs: [],
     datumEersteToelating: [],
     wamVerzekerd: [],
     geschorst: [],
@@ -149,7 +147,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       merk: [],
       handelsbenaming: [],
       apkVervaldatum: [],
-      catalogusprijs: [],
       datumEersteToelating: [],
       wamVerzekerd: [],
       geschorst: [],
@@ -435,7 +432,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     { key: 'merk', label: 'Make' },
                     { key: 'handelsbenaming', label: 'Model' },
                     { key: 'apkVervaldatum', label: 'MOT Expiration' },
-                    { key: 'catalogusprijs', label: 'Catalog Price' },
                     { key: 'datumEersteToelating', label: 'First Admission' },
                     { key: 'wamVerzekerd', label: 'WAM Insured' },
                     { key: 'geschorst', label: 'Suspended' },

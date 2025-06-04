@@ -35,10 +35,13 @@ const VehicleDetail = () => {
             merk: vehicle.merk || 'Unknown',
             handelsbenaming: vehicle.handelsbenaming || 'Unknown',
             apkVervaldatum: vehicle.vervaldatum_apk || 'Unknown',
-            catalogusprijs: vehicle.catalogusprijs || 'Unknown',
             datumEersteToelating: vehicle.datum_eerste_toelating || 'Unknown',
             wamVerzekerd: vehicle.wam_verzekerd || 'Unknown',
             geschorst: vehicle.geschorst || 'No',
+            datumTenaamstelling: vehicle.datum_tenaamstelling || 'Unknown',
+            datumEersteTenaamstellingInNederlandDt: vehicle.datum_eerste_tenaamstelling_in_nederland_dt || 'Unknown',
+            exportIndicator: vehicle.export_indicator || 'Unknown',
+            tenaamstellenMogelijk: vehicle.tenaamstellen_mogelijk || 'Unknown',
             status: 'found'
           });
         } else {
@@ -48,10 +51,13 @@ const VehicleDetail = () => {
             merk: 'Not Found',
             handelsbenaming: 'Not Found',
             apkVervaldatum: 'Not Found',
-            catalogusprijs: 'Not Found',
             datumEersteToelating: 'Not Found',
             wamVerzekerd: 'Not Found',
             geschorst: 'Not Found',
+            datumTenaamstelling: 'Not Found',
+            datumEersteTenaamstellingInNederlandDt: 'Not Found',
+            exportIndicator: 'Not Found',
+            tenaamstellenMogelijk: 'Not Found',
             status: 'error'
           });
         }
@@ -63,10 +69,13 @@ const VehicleDetail = () => {
           merk: 'Error',
           handelsbenaming: 'Error',
           apkVervaldatum: 'Error',
-          catalogusprijs: 'Error',
           datumEersteToelating: 'Error',
           wamVerzekerd: 'Error',
           geschorst: 'Error',
+          datumTenaamstelling: 'Error',
+          datumEersteTenaamstellingInNederlandDt: 'Error',
+          exportIndicator: 'Error',
+          tenaamstellenMogelijk: 'Error',
           status: 'error'
         });
       } finally {
@@ -364,8 +373,8 @@ const VehicleDetail = () => {
                       <p className="text-base sm:text-lg break-words">{vehicleData.handelsbenaming}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Catalog Price</label>
-                      <p className="text-base sm:text-lg">{vehicleData.catalogusprijs}</p>
+                      <label className="text-sm font-medium text-gray-500">Registration Date</label>
+                      <p className="text-base sm:text-lg">{formatDate(vehicleData.datumTenaamstelling)}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -401,8 +410,8 @@ const VehicleDetail = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Suspended</label>
-                      <p className="text-base sm:text-lg">{vehicleData.geschorst}</p>
+                      <label className="text-sm font-medium text-gray-500">Export Indicator</label>
+                      <p className="text-base sm:text-lg">{vehicleData.exportIndicator}</p>
                     </div>
                   </div>
                 </div>
