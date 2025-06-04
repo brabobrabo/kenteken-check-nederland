@@ -28,6 +28,10 @@ interface ColumnFilters {
   datumEersteToelating: string[];
   wamVerzekerd: string[];
   geschorst: string[];
+  datumTenaamstelling: string[];
+  datumEersteTenaamstellingInNederlandDt: string[];
+  exportIndicator: string[];
+  tenaamstellenMogelijk: string[];
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -49,7 +53,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     catalogusprijs: [],
     datumEersteToelating: [],
     wamVerzekerd: [],
-    geschorst: []
+    geschorst: [],
+    datumTenaamstelling: [],
+    datumEersteTenaamstellingInNederlandDt: [],
+    exportIndicator: [],
+    tenaamstellenMogelijk: []
   });
 
   const formatDate = (dateString: string) => {
@@ -82,7 +90,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const getUniqueValues = (column: keyof VehicleData) => {
     const values = data.map(item => {
       const value = item[column].toString();
-      return column === 'datumEersteToelating' ? formatDate(value) : value;
+      return column === 'datumEersteToelating' || column === 'datumTenaamstelling' || column === 'datumEersteTenaamstellingInNederlandDt' 
+        ? formatDate(value) 
+        : value;
     });
     return [...new Set(values)].sort();
   };
@@ -142,7 +152,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       catalogusprijs: [],
       datumEersteToelating: [],
       wamVerzekerd: [],
-      geschorst: []
+      geschorst: [],
+      datumTenaamstelling: [],
+      datumEersteTenaamstellingInNederlandDt: [],
+      exportIndicator: [],
+      tenaamstellenMogelijk: []
     });
   };
 
@@ -152,10 +166,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       'Make': item.merk,
       'Model': item.handelsbenaming,
       'MOT Expiration': item.apkVervaldatum,
-      'Catalog Price': item.catalogusprijs,
       'First Admission': formatDate(item.datumEersteToelating),
       'WAM Insured': item.wamVerzekerd,
       'Suspended': item.geschorst,
+      'Registration Date': formatDate(item.datumTenaamstelling),
+      'First NL Registration': formatDate(item.datumEersteTenaamstellingInNederlandDt),
+      'Export Indicator': item.exportIndicator,
+      'Registration Possible': item.tenaamstellenMogelijk,
       'Status': item.status
     })));
     
@@ -399,7 +416,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     <div><span className="font-medium">Make:</span> {item.merk}</div>
                     <div><span className="font-medium">Model:</span> {item.handelsbenaming}</div>
                     <div><span className="font-medium">MOT:</span> {item.apkVervaldatum}</div>
-                    <div><span className="font-medium">Price:</span> {item.catalogusprijs}</div>
+                    <div><span className="font-medium">Registration:</span> {formatDate(item.datumTenaamstelling)}</div>
+                    <div><span className="font-medium">Export:</span> {item.exportIndicator}</div>
                   </div>
                 </div>
               </div>
@@ -420,7 +438,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     { key: 'catalogusprijs', label: 'Catalog Price' },
                     { key: 'datumEersteToelating', label: 'First Admission' },
                     { key: 'wamVerzekerd', label: 'WAM Insured' },
-                    { key: 'geschorst', label: 'Suspended' }
+                    { key: 'geschorst', label: 'Suspended' },
+                    { key: 'datumTenaamstelling', label: 'Registration Date' },
+                    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration' },
+                    { key: 'exportIndicator', label: 'Export Indicator' },
+                    { key: 'tenaamstellenMogelijk', label: 'Registration Possible' }
                   ].map(({ key, label }) => (
                     <th key={key} className="p-2 lg:p-3 text-left">
                       <div className="space-y-2">
@@ -469,7 +491,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>
                     <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.handelsbenaming}</td>
                     <td className="p-2 lg:p-3 text-sm">{item.apkVervaldatum}</td>
-                    <td className="p-2 lg:p-3 text-sm">{item.catalogusprijs}</td>
                     <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteToelating)}</td>
                     <td className="p-2 lg:p-3">
                       <Badge
@@ -492,6 +513,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                       </Badge>
                     </td>
                     <td className="p-2 lg:p-3 text-sm">{item.geschorst}</td>
+                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumTenaamstelling)}</td>
+                    <td className="p-2 lg:p-3 text-sm">{formatDate(item.datumEersteTenaamstellingInNederlandDt)}</td>
+                    <td className="p-2 lg:p-3 text-sm">{item.exportIndicator}</td>
+                    <td className="p-2 lg:p-3 text-sm">{item.tenaamstellenMogelijk}</td>
                   </tr>
                 ))}
               </tbody>

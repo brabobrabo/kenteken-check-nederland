@@ -19,10 +19,13 @@ interface ColumnFilters {
   merk: string[];
   handelsbenaming: string[];
   apk_vervaldatum: string[];
-  catalogusprijs: string[];
   datum_eerste_toelating: string[];
   wam_verzekerd: string[];
   geschorst: string[];
+  datum_tenaamstelling: string[];
+  datum_eerste_tenaamstelling_in_nederland_dt: string[];
+  export_indicator: string[];
+  tenaamstellen_mogelijk: string[];
 }
 
 const SavedLicenses = () => {
@@ -38,10 +41,13 @@ const SavedLicenses = () => {
     merk: [],
     handelsbenaming: [],
     apk_vervaldatum: [],
-    catalogusprijs: [],
     datum_eerste_toelating: [],
     wam_verzekerd: [],
-    geschorst: []
+    geschorst: [],
+    datum_tenaamstelling: [],
+    datum_eerste_tenaamstelling_in_nederland_dt: [],
+    export_indicator: [],
+    tenaamstellen_mogelijk: []
   });
 
   const handleDelete = async (id: string, kenteken: string) => {
@@ -128,7 +134,9 @@ const SavedLicenses = () => {
   const getUniqueValues = (column: keyof ColumnFilters) => {
     const values = savedLicenses.map(item => {
       const value = item[column]?.toString() || '';
-      return column === 'datum_eerste_toelating' ? formatDate(value) : value;
+      return column === 'datum_eerste_toelating' || column === 'datum_tenaamstelling' || column === 'datum_eerste_tenaamstelling_in_nederland_dt'
+        ? formatDate(value) 
+        : value;
     });
     return [...new Set(values)].filter(Boolean).sort();
   };
@@ -177,10 +185,13 @@ const SavedLicenses = () => {
       merk: [],
       handelsbenaming: [],
       apk_vervaldatum: [],
-      catalogusprijs: [],
       datum_eerste_toelating: [],
       wam_verzekerd: [],
-      geschorst: []
+      geschorst: [],
+      datum_tenaamstelling: [],
+      datum_eerste_tenaamstelling_in_nederland_dt: [],
+      export_indicator: [],
+      tenaamstellen_mogelijk: []
     });
   };
 
@@ -199,10 +210,13 @@ const SavedLicenses = () => {
       'Make': item.merk,
       'Model': item.handelsbenaming,
       'MOT Expiry': item.apk_vervaldatum,
-      'Catalog Price': item.catalogusprijs,
       'First Registration': formatDate(item.datum_eerste_toelating),
       'WAM Insured': item.wam_verzekerd,
       'Suspended': item.geschorst,
+      'Registration Date': formatDate(item.datum_tenaamstelling),
+      'First NL Registration': formatDate(item.datum_eerste_tenaamstelling_in_nederland_dt),
+      'Export Indicator': item.export_indicator,
+      'Registration Possible': item.tenaamstellen_mogelijk,
       'Added By': item.added_by,
       'Added At': new Date(item.added_at).toLocaleDateString()
     })));
@@ -498,7 +512,8 @@ const SavedLicenses = () => {
                         <div><span className="font-medium">Make:</span> {item.merk}</div>
                         <div><span className="font-medium">Model:</span> {item.handelsbenaming}</div>
                         <div><span className="font-medium">MOT:</span> {item.apk_vervaldatum}</div>
-                        <div><span className="font-medium">Price:</span> {item.catalogusprijs}</div>
+                        <div><span className="font-medium">Registration:</span> {formatDate(item.datum_tenaamstelling)}</div>
+                        <div><span className="font-medium">Export:</span> {item.export_indicator}</div>
                         <div><span className="font-medium">Added:</span> {new Date(item.added_at).toLocaleDateString()}</div>
                       </div>
                     </div>
@@ -530,10 +545,13 @@ const SavedLicenses = () => {
                         { key: 'merk', label: 'Make' },
                         { key: 'handelsbenaming', label: 'Model' },
                         { key: 'apk_vervaldatum', label: 'MOT Expiry' },
-                        { key: 'catalogusprijs', label: 'Catalog Price' },
                         { key: 'datum_eerste_toelating', label: 'First Registration' },
                         { key: 'wam_verzekerd', label: 'WAM Insured' },
-                        { key: 'geschorst', label: 'Suspended' }
+                        { key: 'geschorst', label: 'Suspended' },
+                        { key: 'datum_tenaamstelling', label: 'Registration Date' },
+                        { key: 'datum_eerste_tenaamstelling_in_nederland_dt', label: 'First NL Registration' },
+                        { key: 'export_indicator', label: 'Export Indicator' },
+                        { key: 'tenaamstellen_mogelijk', label: 'Registration Possible' }
                       ].map(({ key, label }) => (
                         <th key={key} className="p-2 lg:p-3 text-left">
                           <div className="space-y-2">
@@ -590,7 +608,6 @@ const SavedLicenses = () => {
                         <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.merk}</td>
                         <td className="p-2 lg:p-3 text-sm truncate max-w-0">{item.handelsbenaming}</td>
                         <td className="p-2 lg:p-3 text-sm">{item.apk_vervaldatum}</td>
-                        <td className="p-2 lg:p-3 text-sm">{item.catalogusprijs}</td>
                         <td className="p-2 lg:p-3 text-sm">{formatDate(item.datum_eerste_toelating)}</td>
                         <td className="p-2 lg:p-3">
                           <Badge
@@ -611,6 +628,10 @@ const SavedLicenses = () => {
                           </Badge>
                         </td>
                         <td className="p-2 lg:p-3 text-sm">{item.geschorst}</td>
+                        <td className="p-2 lg:p-3 text-sm">{formatDate(item.datum_tenaamstelling)}</td>
+                        <td className="p-2 lg:p-3 text-sm">{formatDate(item.datum_eerste_tenaamstelling_in_nederland_dt)}</td>
+                        <td className="p-2 lg:p-3 text-sm">{item.export_indicator}</td>
+                        <td className="p-2 lg:p-3 text-sm">{item.tenaamstellen_mogelijk}</td>
                       </tr>
                     ))}
                   </tbody>

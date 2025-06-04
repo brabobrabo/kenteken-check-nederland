@@ -4,9 +4,12 @@ export interface VehicleData {
   merk: string;
   handelsbenaming: string;
   apkVervaldatum: string;
-  catalogusprijs: string;
   datumEersteToelating: string;
   wamVerzekerd: string;
   geschorst: string;
+  datumTenaamstelling: string;
+  datumEersteTenaamstellingInNederlandDt: string;
+  exportIndicator: string;
+  tenaamstellenMogelijk: string;
   status: 'found' | 'error';
 }

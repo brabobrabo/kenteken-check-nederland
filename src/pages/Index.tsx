@@ -104,10 +104,13 @@ const Index = () => {
               merk: vehicle.merk || 'Unknown',
               handelsbenaming: vehicle.handelsbenaming || 'Unknown',
               apkVervaldatum: vehicle.vervaldatum_apk || 'Unknown',
-              catalogusprijs: vehicle.catalogusprijs || 'Unknown',
               datumEersteToelating: vehicle.datum_eerste_toelating || 'Unknown',
               wamVerzekerd: vehicle.wam_verzekerd || 'Unknown',
               geschorst: vehicle.geschorst || 'No',
+              datumTenaamstelling: vehicle.datum_tenaamstelling || 'Unknown',
+              datumEersteTenaamstellingInNederlandDt: vehicle.datum_eerste_tenaamstelling_in_nederland_dt || 'Unknown',
+              exportIndicator: vehicle.export_indicator || 'Unknown',
+              tenaamstellenMogelijk: vehicle.tenaamstellen_mogelijk || 'Unknown',
               status: 'found'
             });
           } else {
@@ -116,10 +119,13 @@ const Index = () => {
               merk: 'Not Found',
               handelsbenaming: 'Not Found',
               apkVervaldatum: 'Not Found',
-              catalogusprijs: 'Not Found',
               datumEersteToelating: 'Not Found',
               wamVerzekerd: 'Not Found',
               geschorst: 'Not Found',
+              datumTenaamstelling: 'Not Found',
+              datumEersteTenaamstellingInNederlandDt: 'Not Found',
+              exportIndicator: 'Not Found',
+              tenaamstellenMogelijk: 'Not Found',
               status: 'error'
             });
           }
@@ -130,10 +136,13 @@ const Index = () => {
             merk: 'Error',
             handelsbenaming: 'Error',
             apkVervaldatum: 'Error',
-            catalogusprijs: 'Error',
             datumEersteToelating: 'Error',
             wamVerzekerd: 'Error',
             geschorst: 'Error',
+            datumTenaamstelling: 'Error',
+            datumEersteTenaamstellingInNederlandDt: 'Error',
+            exportIndicator: 'Error',
+            tenaamstellenMogelijk: 'Error',
             status: 'error'
           });
         }
