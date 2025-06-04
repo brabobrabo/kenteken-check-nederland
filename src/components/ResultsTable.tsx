@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,10 +88,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   // Get unique values for each column
   const getUniqueValues = (column: keyof VehicleData) => {
     const values = data.map(item => {
-      const value = item[column].toString();
+      const value = item[column];
+      // Add null check before calling toString()
+      if (value === null || value === undefined) {
+        return 'Unknown';
+      }
+      const stringValue = value.toString();
       return column === 'datumEersteToelating' || column === 'datumTenaamstelling' || column === 'datumEersteTenaamstellingInNederlandDt' 
-        ? formatDate(value) 
-        : value;
+        ? formatDate(stringValue) 
+        : stringValue;
     });
     return [...new Set(values)].sort();
   };
