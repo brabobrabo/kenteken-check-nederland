@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,11 +48,50 @@ export const useSavedLicenses = () => {
     try {
       const { data, error } = await supabase
         .from('saved_licenses')
-        .select('*')
+        .select(`
+          id,
+          kenteken,
+          merk,
+          handelsbenaming,
+          apk_vervaldatum,
+          datum_eerste_toelating,
+          wam_verzekerd,
+          geschorst,
+          added_by,
+          added_at,
+          voertuigsoort,
+          inrichting,
+          aantal_zitplaatsen,
+          eerste_kleur,
+          tweede_kleur,
+          aantal_cilinders,
+          cilinderinhoud,
+          massa_ledig_voertuig,
+          toegestane_maximum_massa_voertuig,
+          massa_rijklaar,
+          maximum_massa_trekken_ongeremd,
+          maximum_massa_trekken_geremd,
+          datum_tenaamstelling,
+          handelsbenaming_uitgebreid,
+          vermogen_massaverhouding,
+          uitstoot_co2_gecombineerd,
+          milieuklasse_eg_goedkeuring_licht,
+          geluidsniveau_stationair,
+          geluidsniveau_rijdend
+        `)
         .order('added_at', { ascending: false });
 
       if (error) throw error;
-      setSavedLicenses(data || []);
+      
+      // Map the database data to include the new properties
+      const mappedData = (data || []).map(item => ({
+        ...item,
+        datumEersteTenaamstellingInNederlandDt: item.datum_tenaamstelling || null,
+        exportIndicator: 'Unknown',
+        tenaamstellenMogelijk: 'Unknown'
+      }));
+      
+      setSavedLicenses(mappedData);
     } catch (error) {
       console.error('Error fetching saved licenses:', error);
       toast.error('Failed to load saved licenses');
@@ -78,9 +116,6 @@ export const useSavedLicenses = () => {
         wam_verzekerd: vehicleData.wamVerzekerd,
         geschorst: vehicleData.geschorst,
         datum_tenaamstelling: vehicleData.datumTenaamstelling,
-        datumEersteTenaamstellingInNederlandDt: vehicleData.datumEersteTenaamstellingInNederlandDt,
-        exportIndicator: vehicleData.exportIndicator,
-        tenaamstellenMogelijk: vehicleData.tenaamstellenMogelijk,
         added_by: user.id,
         ...additionalData
       };
