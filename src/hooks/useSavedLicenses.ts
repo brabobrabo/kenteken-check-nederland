@@ -11,7 +11,6 @@ export interface SavedLicense {
   merk: string | null;
   handelsbenaming: string | null;
   apk_vervaldatum: string | null;
-  catalogusprijs: string | null;
   datum_eerste_toelating: string | null;
   wam_verzekerd: string | null;
   geschorst: string | null;
@@ -36,6 +35,9 @@ export interface SavedLicense {
   milieuklasse_eg_goedkeuring_licht: string | null;
   geluidsniveau_stationair: number | null;
   geluidsniveau_rijdend: number | null;
+  datumEersteTenaamstellingInNederlandDt: string | null;
+  exportIndicator: string | null;
+  tenaamstellenMogelijk: string | null;
 }
 
 export const useSavedLicenses = () => {
@@ -72,10 +74,13 @@ export const useSavedLicenses = () => {
         merk: vehicleData.merk,
         handelsbenaming: vehicleData.handelsbenaming,
         apk_vervaldatum: vehicleData.apkVervaldatum,
-        catalogusprijs: vehicleData.catalogusprijs,
         datum_eerste_toelating: vehicleData.datumEersteToelating,
         wam_verzekerd: vehicleData.wamVerzekerd,
         geschorst: vehicleData.geschorst,
+        datum_tenaamstelling: vehicleData.datumTenaamstelling,
+        datumEersteTenaamstellingInNederlandDt: vehicleData.datumEersteTenaamstellingInNederlandDt,
+        exportIndicator: vehicleData.exportIndicator,
+        tenaamstellenMogelijk: vehicleData.tenaamstellenMogelijk,
         added_by: user.id,
         ...additionalData
       };
