@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,6 +77,11 @@ const Index = () => {
   }
 
   const handleLicensePlatesSubmit = async (licensePlates: string[]) => {
+    // Check if this should be handled as a bulk request
+    if (licensePlates.length >= 1000) {
+      toast.info('Large dataset detected. Consider using the bulk export mode for better performance.');
+    }
+
     setIsLoading(true);
     setProgress(0);
     setVehicleData([]);
@@ -85,77 +89,97 @@ const Index = () => {
     try {
       const results: VehicleData[] = [];
       const total = licensePlates.length;
+      const batchSize = licensePlates.length >= 1000 ? 100 : 50;
       
-      for (let i = 0; i < licensePlates.length; i++) {
-        const plate = licensePlates[i].trim().toUpperCase();
-        if (!plate) continue;
+      // Process in batches for better performance
+      for (let i = 0; i < licensePlates.length; i += batchSize) {
+        const batch = licensePlates.slice(i, i + batchSize);
         
-        // Remove dashes from license plate for API call
-        const plateForApi = plate.replace(/-/g, '');
-        
-        try {
-          const response = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${plateForApi}`);
-          const data = await response.json();
+        // Process batch concurrently
+        const batchPromises = batch.map(async (plate) => {
+          const trimmedPlate = plate.trim().toUpperCase();
+          if (!trimmedPlate) return null;
           
-          if (data && data.length > 0) {
-            const vehicle = data[0];
-            results.push({
-              kenteken: vehicle.kenteken || plate,
-              merk: vehicle.merk || 'Unknown',
-              handelsbenaming: vehicle.handelsbenaming || 'Unknown',
-              apkVervaldatum: vehicle.vervaldatum_apk || 'Unknown',
-              datumEersteToelating: vehicle.datum_eerste_toelating || 'Unknown',
-              wamVerzekerd: vehicle.wam_verzekerd || 'Unknown',
-              geschorst: vehicle.geschorst || 'No',
-              datumTenaamstelling: vehicle.datum_tenaamstelling || 'Unknown',
-              datumEersteTenaamstellingInNederlandDt: vehicle.datum_eerste_tenaamstelling_in_nederland_dt || 'Unknown',
-              exportIndicator: vehicle.export_indicator || 'Unknown',
-              tenaamstellenMogelijk: vehicle.tenaamstellen_mogelijk || 'Unknown',
-              status: 'found'
-            });
-          } else {
-            results.push({
-              kenteken: plate,
-              merk: 'Not Found',
-              handelsbenaming: 'Not Found',
-              apkVervaldatum: 'Not Found',
-              datumEersteToelating: 'Not Found',
-              wamVerzekerd: 'Not Found',
-              geschorst: 'Not Found',
-              datumTenaamstelling: 'Not Found',
-              datumEersteTenaamstellingInNederlandDt: 'Not Found',
-              exportIndicator: 'Not Found',
-              tenaamstellenMogelijk: 'Not Found',
-              status: 'error'
-            });
+          // Remove dashes from license plate for API call
+          const plateForApi = trimmedPlate.replace(/-/g, '');
+          
+          try {
+            const response = await fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${plateForApi}`);
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+              const vehicle = data[0];
+              return {
+                kenteken: vehicle.kenteken || trimmedPlate,
+                merk: vehicle.merk || 'Unknown',
+                handelsbenaming: vehicle.handelsbenaming || 'Unknown',
+                apkVervaldatum: vehicle.vervaldatum_apk || 'Unknown',
+                datumEersteToelating: vehicle.datum_eerste_toelating || 'Unknown',
+                wamVerzekerd: vehicle.wam_verzekerd || 'Unknown',
+                geschorst: vehicle.geschorst || 'No',
+                datumTenaamstelling: vehicle.datum_tenaamstelling || 'Unknown',
+                datumEersteTenaamstellingInNederlandDt: vehicle.datum_eerste_tenaamstelling_in_nederland_dt || 'Unknown',
+                exportIndicator: vehicle.export_indicator || 'Unknown',
+                tenaamstellenMogelijk: vehicle.tenaamstellen_mogelijk || 'Unknown',
+                status: 'found' as const
+              };
+            } else {
+              return {
+                kenteken: trimmedPlate,
+                merk: 'Not Found',
+                handelsbenaming: 'Not Found',
+                apkVervaldatum: 'Not Found',
+                datumEersteToelating: 'Not Found',
+                wamVerzekerd: 'Not Found',
+                geschorst: 'Not Found',
+                datumTenaamstelling: 'Not Found',
+                datumEersteTenaamstellingInNederlandDt: 'Not Found',
+                exportIndicator: 'Not Found',
+                tenaamstellenMogelijk: 'Not Found',
+                status: 'error' as const
+              };
+            }
+          } catch (error) {
+            console.error(`Error fetching data for ${trimmedPlate}:`, error);
+            return {
+              kenteken: trimmedPlate,
+              merk: 'Error',
+              handelsbenaming: 'Error',
+              apkVervaldatum: 'Error',
+              datumEersteToelating: 'Error',
+              wamVerzekerd: 'Error',
+              geschorst: 'Error',
+              datumTenaamstelling: 'Error',
+              datumEersteTenaamstellingInNederlandDt: 'Error',
+              exportIndicator: 'Error',
+              tenaamstellenMogelijk: 'Error',
+              status: 'error' as const
+            };
           }
-        } catch (error) {
-          console.error(`Error fetching data for ${plate}:`, error);
-          results.push({
-            kenteken: plate,
-            merk: 'Error',
-            handelsbenaming: 'Error',
-            apkVervaldatum: 'Error',
-            datumEersteToelating: 'Error',
-            wamVerzekerd: 'Error',
-            geschorst: 'Error',
-            datumTenaamstelling: 'Error',
-            datumEersteTenaamstellingInNederlandDt: 'Error',
-            exportIndicator: 'Error',
-            tenaamstellenMogelijk: 'Error',
-            status: 'error'
-          });
+        });
+        
+        const batchResults = await Promise.allSettled(batchPromises);
+        const validResults = batchResults
+          .filter(result => result.status === 'fulfilled' && result.value !== null)
+          .map(result => (result as PromiseFulfilledResult<VehicleData>).value);
+        
+        results.push(...validResults);
+        
+        const currentProgress = ((i + batchSize) / total) * 100;
+        setProgress(Math.min(currentProgress, 100));
+        
+        // Update results in batches for better performance
+        if (results.length <= 5000) { // Only show in UI for reasonable dataset sizes
+          setVehicleData([...results]);
         }
         
-        setProgress(((i + 1) / total) * 100);
-        setVehicleData([...results]);
-        
-        // Small delay to prevent overwhelming the API
-        if (i < licensePlates.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // Small delay to prevent overwhelming the API and give UI time to update
+        if (i + batchSize < licensePlates.length) {
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
       }
       
+      setVehicleData(results);
       toast.success(`Processed ${results.length} license plates successfully`);
     } catch (error) {
       console.error('Error processing license plates:', error);

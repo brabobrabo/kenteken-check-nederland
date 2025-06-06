@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { BulkProcessingOptions } from './BulkProcessingOptions';
+import { useBulkProcessor } from '@/hooks/useBulkProcessor';
 import * as XLSX from 'xlsx';
 
 interface FileUploadProps {
@@ -17,11 +19,28 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   isLoading
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [parsedLicensePlates, setParsedLicensePlates] = useState<string[]>([]);
+  const [showProcessingOptions, setShowProcessingOptions] = useState(false);
+  
+  const {
+    isProcessing,
+    progress,
+    processed,
+    total,
+    error,
+    canCancel,
+    processBulk,
+    cancelProcessing,
+    resetState
+  } = useBulkProcessor();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setShowProcessingOptions(false);
+      setParsedLicensePlates([]);
+      resetState();
     }
   };
 
@@ -54,7 +73,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     return 0;
   };
 
-  const handleSubmit = async () => {
+  const parseFile = async () => {
     if (!selectedFile) {
       toast.error('Please select a file first');
       return;
@@ -105,12 +124,58 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       }
       
       toast.success(`Found ${licensePlates.length} license plates in column "${headers[licensePlateIndex]}"`);
-      onSubmit(licensePlates);
+      setParsedLicensePlates(licensePlates);
+      setShowProcessingOptions(true);
     } catch (error) {
       console.error('Error reading file:', error);
       toast.error('Error reading file. Please ensure it\'s a valid CSV/Excel file.');
     }
   };
+
+  const handleStandardProcessing = () => {
+    onSubmit(parsedLicensePlates);
+    setShowProcessingOptions(false);
+  };
+
+  const handleBulkProcessing = () => {
+    const isLargeRequest = parsedLicensePlates.length >= 1000;
+    
+    processBulk(parsedLicensePlates, {
+      batchSize: isLargeRequest ? 100 : 50,
+      isLargeRequest,
+      exportDirectly: true,
+      onComplete: (results) => {
+        toast.success(`Processing complete! ${results.length} license plates processed and exported to Excel.`);
+        setShowProcessingOptions(false);
+      }
+    });
+  };
+
+  if (showProcessingOptions && parsedLicensePlates.length > 0) {
+    return (
+      <div className="space-y-4">
+        <BulkProcessingOptions
+          licensePlateCount={parsedLicensePlates.length}
+          onProcessStandard={handleStandardProcessing}
+          onProcessBulk={handleBulkProcessing}
+          isProcessing={isProcessing}
+          progress={progress}
+          processed={processed}
+          total={total}
+          canCancel={canCancel}
+          onCancel={cancelProcessing}
+          error={error}
+        />
+        <Button 
+          onClick={() => setShowProcessingOptions(false)}
+          variant="outline"
+          className="w-full"
+        >
+          Back to File Selection
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -143,11 +208,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 </p>
               </div>
               <Button 
-                onClick={handleSubmit}
+                onClick={parseFile}
                 disabled={isLoading}
                 className="bg-green-600 hover:bg-green-700"
               >
-                {isLoading ? 'Processing...' : 'Process File'}
+                {isLoading ? 'Processing...' : 'Parse File'}
               </Button>
             </div>
           </CardContent>
