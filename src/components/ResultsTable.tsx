@@ -15,6 +15,44 @@ import * as XLSX from 'xlsx';
 import { ColumnSettings } from './ColumnSettings';
 import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
 
+const allFilterKeys = [
+  'kenteken',
+  'merk',
+  'handelsbenaming',
+  'apkVervaldatum',
+  'datumEersteToelating',
+  'wamVerzekerd',
+  'geschorst',
+  'datumTenaamstelling',
+  'datumEersteTenaamstellingInNederlandDt',
+  'exportIndicator',
+  'tenaamstellenMogelijk',
+  'voertuigsoort',
+  'eerste_kleur',
+  'tweede_kleur',
+  'aantal_zitplaatsen',
+  'aantal_staanplaatsen',
+  'datum_eerste_afgifte_nederland',
+  'aantal_cilinders',
+  'cilinder_inhoud',
+  'massa_ledig_voertuig',
+  'toegestane_maximum_massa_voertuig',
+  'massa_rijklaar',
+  'maximum_massa_trekken_ongeremd',
+  'maximum_massa_trekken_geremd',
+  'datum_afgifte_kenteken',
+  'vervaldatum_apk',
+  'inrichting',
+  'aantal_wielen',
+  'aantal_assen'
+] as const;
+type FilterKey = typeof allFilterKeys[number];
+
+const emptyColumnFilters: Record<FilterKey, string[]> = allFilterKeys.reduce((acc, key) => {
+  acc[key] = [];
+  return acc;
+}, {} as Record<FilterKey, string[]>);
+
 interface ResultsTableProps {
   data: VehicleData[];
   isLoading: boolean;
@@ -186,157 +224,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       setSortDirection('asc');
     }
   };
-
-  const allFilterKeys = [
-    'kenteken',
-    'merk',
-    'handelsbenaming',
-    'apkVervaldatum',
-    'datumEersteToelating',
-    'wamVerzekerd',
-    'geschorst',
-    'datumTenaamstelling',
-    'datumEersteTenaamstellingInNederlandDt',
-    'exportIndicator',
-    'tenaamstellenMogelijk',
-    'voertuigsoort',
-    'eerste_kleur',
-    'tweede_kleur',
-    'aantal_zitplaatsen',
-    'aantal_staanplaatsen',
-    'datum_eerste_afgifte_nederland',
-    'aantal_cilinders',
-    'cilinder_inhoud',
-    'massa_ledig_voertuig',
-    'toegestane_maximum_massa_voertuig',
-    'massa_rijklaar',
-    'maximum_massa_trekken_ongeremd',
-    'maximum_massa_trekken_geremd',
-    'datum_afgifte_kenteken',
-    'vervaldatum_apk',
-    'inrichting',
-    'aantal_wielen',
-    'aantal_assen'
-  ] as const;
-  type FilterKey = typeof allFilterKeys[number];
-
-  const emptyColumnFilters: Record<FilterKey, string[]> = {} as Record<FilterKey, string[]>;
-  for (const key of allFilterKeys) {
-    emptyColumnFilters[key] = [];
-  }
-
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setColumnFilters({ ...emptyColumnFilters });
-  };
-
-  const exportToExcel = () => {
-    const orderedData = filteredData.map(item => {
-      const orderedItem: any = {};
-      visibleColumns.forEach(column => {
-        const key = column.key as keyof VehicleData;
-        switch (key) {
-          case 'kenteken':
-            orderedItem['License Plate'] = item.kenteken;
-            break;
-          case 'merk':
-            orderedItem['Make'] = item.merk;
-            break;
-          case 'handelsbenaming':
-            orderedItem['Model'] = item.handelsbenaming;
-            break;
-          case 'apkVervaldatum':
-            orderedItem['MOT Expiration'] = item.apkVervaldatum;
-            break;
-          case 'datumEersteToelating':
-            orderedItem['First Admission'] = formatDate(item.datumEersteToelating);
-            break;
-          case 'wamVerzekerd':
-            orderedItem['WAM Insured'] = item.wamVerzekerd;
-            break;
-          case 'geschorst':
-            orderedItem['Suspended'] = item.geschorst;
-            break;
-          case 'datumTenaamstelling':
-            orderedItem['Registration Date'] = formatDate(item.datumTenaamstelling);
-            break;
-          case 'datumEersteTenaamstellingInNederlandDt':
-            orderedItem['First NL Registration'] = formatDate(item.datumEersteTenaamstellingInNederlandDt);
-            break;
-          case 'exportIndicator':
-            orderedItem['Export Indicator'] = item.exportIndicator;
-            break;
-          case 'tenaamstellenMogelijk':
-            orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
-            break;
-          case 'voertuigsoort':
-            orderedItem['Vehicle Type'] = item.voertuigsoort;
-            break;
-          case 'eerste_kleur':
-            orderedItem['Primary Color'] = item.eerste_kleur;
-            break;
-          case 'tweede_kleur':
-            orderedItem['Secondary Color'] = item.tweede_kleur;
-            break;
-          case 'aantal_zitplaatsen':
-            orderedItem['Number of Seats'] = item.aantal_zitplaatsen;
-            break;
-          case 'aantal_staanplaatsen':
-            orderedItem['Standing Places'] = item.aantal_staanplaatsen;
-            break;
-          case 'datum_eerste_afgifte_nederland':
-            orderedItem['First Issue Netherlands'] = item.datum_eerste_afgifte_nederland;
-            break;
-          case 'aantal_cilinders':
-            orderedItem['Number of Cylinders'] = item.aantal_cilinders;
-            break;
-          case 'cilinder_inhoud':
-            orderedItem['Engine Displacement'] = item.cilinder_inhoud;
-            break;
-          case 'massa_ledig_voertuig':
-            orderedItem['Empty Vehicle Mass'] = item.massa_ledig_voertuig;
-            break;
-          case 'toegestane_maximum_massa_voertuig':
-            orderedItem['Maximum Allowed Mass'] = item.toegestane_maximum_massa_voertuig;
-            break;
-          case 'massa_rijklaar':
-            orderedItem['Ready-to-Drive Mass'] = item.massa_rijklaar;
-            break;
-          case 'maximum_massa_trekken_ongeremd':
-            orderedItem['Max Unbraked Trailer Mass'] = item.maximum_massa_trekken_ongeremd;
-            break;
-          case 'maximum_massa_trekken_geremd':
-            orderedItem['Max Braked Trailer Mass'] = item.maximum_massa_trekken_geremd;
-            break;
-          case 'datum_afgifte_kenteken':
-            orderedItem['License Plate Issue Date'] = item.datum_afgifte_kenteken;
-            break;
-          case 'vervaldatum_apk':
-            orderedItem['MOT Expiration Date'] = item.vervaldatum_apk;
-            break;
-          case 'inrichting':
-            orderedItem['Configuration'] = item.inrichting;
-            break;
-          case 'aantal_wielen':
-            orderedItem['Number of Wheels'] = item.aantal_wielen;
-            break;
-          case 'aantal_assen':
-            orderedItem['Number of Axles'] = item.aantal_assen;
-            break;
-        }
-      });
-      orderedItem['Status'] = item.status;
-      return orderedItem;
-    });
-    
-    const worksheet = XLSX.utils.json_to_sheet(orderedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Vehicle Data');
-    XLSX.writeFile(workbook, `vehicle_verification_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
-  const foundCount = data.filter(item => item.status === 'found').length;
-  const errorCount = data.filter(item => item.status === 'error').length;
 
   const handleRowClick = (kenteken: string) => {
     navigate(`/vehicle/${kenteken}`);
