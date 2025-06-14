@@ -33,6 +33,24 @@ interface ColumnFilters {
   datumEersteTenaamstellingInNederlandDt: string[];
   exportIndicator: string[];
   tenaamstellenMogelijk: string[];
+  voertuigsoort: string[];
+  eerste_kleur: string[];
+  tweede_kleur: string[];
+  aantal_zitplaatsen: string[];
+  aantal_staanplaatsen: string[];
+  datum_eerste_afgifte_nederland: string[];
+  aantal_cilinders: string[];
+  cilinder_inhoud: string[];
+  massa_ledig_voertuig: string[];
+  toegestane_maximum_massa_voertuig: string[];
+  massa_rijklaar: string[];
+  maximum_massa_trekken_ongeremd: string[];
+  maximum_massa_trekken_geremd: string[];
+  datum_afgifte_kenteken: string[];
+  vervaldatum_apk: string[];
+  inrichting: string[];
+  aantal_wielen: string[];
+  aantal_assen: string[];
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -57,21 +75,57 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     datumTenaamstelling: [],
     datumEersteTenaamstellingInNederlandDt: [],
     exportIndicator: [],
-    tenaamstellenMogelijk: []
+    tenaamstellenMogelijk: [],
+    voertuigsoort: [],
+    eerste_kleur: [],
+    tweede_kleur: [],
+    aantal_zitplaatsen: [],
+    aantal_staanplaatsen: [],
+    datum_eerste_afgifte_nederland: [],
+    aantal_cilinders: [],
+    cilinder_inhoud: [],
+    massa_ledig_voertuig: [],
+    toegestane_maximum_massa_voertuig: [],
+    massa_rijklaar: [],
+    maximum_massa_trekken_ongeremd: [],
+    maximum_massa_trekken_geremd: [],
+    datum_afgifte_kenteken: [],
+    vervaldatum_apk: [],
+    inrichting: [],
+    aantal_wielen: [],
+    aantal_assen: [],
   });
 
-  const defaultColumns: ColumnConfig[] = [
+  const allPossibleColumns: ColumnConfig[] = [
     { key: 'kenteken', label: 'License Plate', visible: true },
     { key: 'merk', label: 'Make', visible: true },
-    { key: 'handelsbenaming', label: 'Model', visible: true },
+    { key: 'handelsbenaming', label: 'Model/Trade Name', visible: true },
+    { key: 'voertuigsoort', label: 'Vehicle Type', visible: false },
+    { key: 'eerste_kleur', label: 'Primary Color', visible: false },
+    { key: 'tweede_kleur', label: 'Secondary Color', visible: false },
+    { key: 'aantal_zitplaatsen', label: 'Number of Seats', visible: false },
+    { key: 'aantal_staanplaatsen', label: 'Standing Places', visible: false },
+    { key: 'datum_eerste_toelating', label: 'First Admission Date', visible: false },
+    { key: 'datum_eerste_afgifte_nederland', label: 'First Issue Netherlands', visible: false },
+    { key: 'wam_verzekerd', label: 'WAM Insured', visible: true },
+    { key: 'aantal_cilinders', label: 'Number of Cylinders', visible: false },
+    { key: 'cilinder_inhoud', label: 'Engine Displacement', visible: false },
+    { key: 'massa_ledig_voertuig', label: 'Empty Vehicle Mass', visible: false },
+    { key: 'toegestane_maximum_massa_voertuig', label: 'Maximum Allowed Mass', visible: false },
+    { key: 'massa_rijklaar', label: 'Ready-to-Drive Mass', visible: false },
+    { key: 'maximum_massa_trekken_ongeremd', label: 'Max Unbraked Trailer Mass', visible: false },
+    { key: 'maximum_massa_trekken_geremd', label: 'Max Braked Trailer Mass', visible: false },
+    { key: 'datum_afgifte_kenteken', label: 'License Plate Issue Date', visible: false },
+    { key: 'datum_tenaamstelling', label: 'Registration Date', visible: true },
     { key: 'apkVervaldatum', label: 'MOT Expiration', visible: true },
-    { key: 'datumEersteToelating', label: 'First Admission', visible: true },
-    { key: 'wamVerzekerd', label: 'WAM Insured', visible: true },
-    { key: 'geschorst', label: 'Suspended', visible: true },
-    { key: 'datumTenaamstelling', label: 'Registration Date', visible: true },
-    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
+    { key: 'vervaldatum_apk', label: 'MOT Expiration Date', visible: false },
+    { key: 'inrichting', label: 'Configuration', visible: false },
+    { key: 'aantal_wielen', label: 'Number of Wheels', visible: false },
+    { key: 'aantal_assen', label: 'Number of Axles', visible: false },
     { key: 'exportIndicator', label: 'Export Indicator', visible: true },
-    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true }
+    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true },
+    { key: 'geschorst', label: 'Suspended', visible: true },
+    { key: 'status', label: 'Status', visible: true },
   ];
 
   const {
@@ -80,7 +134,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     toggleColumnVisibility,
     resetColumns,
     visibleColumns
-  } = useColumnReorder(defaultColumns, 'results-table-columns');
+  } = useColumnReorder(allPossibleColumns, 'results-table-columns');
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
@@ -88,7 +142,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
     
     try {
-      // Handle YYYYMMDD format
       if (dateString.length === 8 && /^\d{8}$/.test(dateString)) {
         const year = dateString.substring(0, 4);
         const month = dateString.substring(4, 6);
@@ -96,7 +149,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         return `${day}-${month}-${year}`;
       }
       
-      // Handle other date formats
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
         return date.toLocaleDateString('nl-NL');
@@ -108,11 +160,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  // Get unique values for each column
   const getUniqueValues = (column: keyof VehicleData) => {
     const values = data.map(item => {
       const value = item[column];
-      // Add null check before calling toString()
       if (value === null || value === undefined) {
         return 'Unknown';
       }
@@ -135,12 +185,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const filteredData = useMemo(() => {
     let filtered = data.filter(item => {
-      // Global search
       const matchesGlobalSearch = Object.values(item).some(value =>
         value.toString().toLowerCase().includes(searchTerm.toLowerCase())
       );
       
-      // Column-specific filters
       const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValues]) => {
         if (filterValues.length === 0) return true;
         const itemValue = key === 'datumEersteToelating' 
@@ -182,7 +230,25 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       datumTenaamstelling: [],
       datumEersteTenaamstellingInNederlandDt: [],
       exportIndicator: [],
-      tenaamstellenMogelijk: []
+      tenaamstellenMogelijk: [],
+      voertuigsoort: [],
+      eerste_kleur: [],
+      tweede_kleur: [],
+      aantal_zitplaatsen: [],
+      aantal_staanplaatsen: [],
+      datum_eerste_afgifte_nederland: [],
+      aantal_cilinders: [],
+      cilinder_inhoud: [],
+      massa_ledig_voertuig: [],
+      toegestane_maximum_massa_voertuig: [],
+      massa_rijklaar: [],
+      maximum_massa_trekken_ongeremd: [],
+      maximum_massa_trekken_geremd: [],
+      datum_afgifte_kenteken: [],
+      vervaldatum_apk: [],
+      inrichting: [],
+      aantal_wielen: [],
+      aantal_assen: [],
     });
   };
 
@@ -225,6 +291,60 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           case 'tenaamstellenMogelijk':
             orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
             break;
+          case 'voertuigsoort':
+            orderedItem['Vehicle Type'] = item.voertuigsoort;
+            break;
+          case 'eerste_kleur':
+            orderedItem['Primary Color'] = item.eerste_kleur;
+            break;
+          case 'tweede_kleur':
+            orderedItem['Secondary Color'] = item.tweede_kleur;
+            break;
+          case 'aantal_zitplaatsen':
+            orderedItem['Number of Seats'] = item.aantal_zitplaatsen;
+            break;
+          case 'aantal_staanplaatsen':
+            orderedItem['Standing Places'] = item.aantal_staanplaatsen;
+            break;
+          case 'datum_eerste_afgifte_nederland':
+            orderedItem['First Issue Netherlands'] = item.datum_eerste_afgifte_nederland;
+            break;
+          case 'aantal_cilinders':
+            orderedItem['Number of Cylinders'] = item.aantal_cilinders;
+            break;
+          case 'cilinder_inhoud':
+            orderedItem['Engine Displacement'] = item.cilinder_inhoud;
+            break;
+          case 'massa_ledig_voertuig':
+            orderedItem['Empty Vehicle Mass'] = item.massa_ledig_voertuig;
+            break;
+          case 'toegestane_maximum_massa_voertuig':
+            orderedItem['Maximum Allowed Mass'] = item.toegestane_maximum_massa_voertuig;
+            break;
+          case 'massa_rijklaar':
+            orderedItem['Ready-to-Drive Mass'] = item.massa_rijklaar;
+            break;
+          case 'maximum_massa_trekken_ongeremd':
+            orderedItem['Max Unbraked Trailer Mass'] = item.maximum_massa_trekken_ongeremd;
+            break;
+          case 'maximum_massa_trekken_geremd':
+            orderedItem['Max Braked Trailer Mass'] = item.maximum_massa_trekken_geremd;
+            break;
+          case 'datum_afgifte_kenteken':
+            orderedItem['License Plate Issue Date'] = item.datum_afgifte_kenteken;
+            break;
+          case 'vervaldatum_apk':
+            orderedItem['MOT Expiration Date'] = item.vervaldatum_apk;
+            break;
+          case 'inrichting':
+            orderedItem['Configuration'] = item.inrichting;
+            break;
+          case 'aantal_wielen':
+            orderedItem['Number of Wheels'] = item.aantal_wielen;
+            break;
+          case 'aantal_assen':
+            orderedItem['Number of Axles'] = item.aantal_assen;
+            break;
         }
       });
       orderedItem['Status'] = item.status;
@@ -258,7 +378,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     const handleOpenChange = (open: boolean) => {
       setIsOpen(open);
       if (open) {
-        // Initialize local state with current filters
         setLocalSelectedValues([...selectedValues]);
         setFilterSearch('');
       }
@@ -431,7 +550,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       
       {data.length > 0 && (
         <CardContent className="px-2 sm:px-6">
-          {/* Mobile Card View */}
           <div className="block sm:hidden space-y-3">
             {filteredData.map((item, index) => (
               <div
@@ -488,7 +606,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             ))}
           </div>
 
-          {/* Desktop Table View */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
