@@ -18,6 +18,7 @@ const Index = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [selectedColumns, setSelectedColumns] = useState<any[]>([]);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -76,7 +77,12 @@ const Index = () => {
     );
   }
 
-  const handleLicensePlatesSubmit = async (licensePlates: string[]) => {
+  const handleLicensePlatesSubmit = async (licensePlates: string[], columnConfig?: any[]) => {
+    // Store the column configuration for the ResultsTable
+    if (columnConfig) {
+      setSelectedColumns(columnConfig);
+    }
+
     // Check if this should be handled as a bulk request
     if (licensePlates.length >= 1000) {
       toast.info('Large dataset detected. Consider using the bulk export mode for better performance.');
@@ -247,7 +253,7 @@ const Index = () => {
               
               <TabsContent value="file">
                 <FileUpload 
-                  onSubmit={handleLicensePlatesSubmit}
+                  onSubmit={(plates) => handleLicensePlatesSubmit(plates)}
                   isLoading={isLoading}
                 />
               </TabsContent>
@@ -260,6 +266,7 @@ const Index = () => {
             data={vehicleData}
             isLoading={isLoading}
             progress={progress}
+            initialColumnConfig={selectedColumns}
           />
         )}
       </div>

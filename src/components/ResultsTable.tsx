@@ -18,7 +18,8 @@ import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
 interface ResultsTableProps {
   data: VehicleData[];
   isLoading: boolean;
-  progress: number;
+  progress?: number;
+  initialColumnConfig?: ColumnConfig[];
 }
 
 interface ColumnFilters {
@@ -122,10 +123,11 @@ const defaultColumns: ColumnConfig[] = [
   { key: 'geluidsniveau_stationair', label: 'Noise Level Stationary', visible: false }
 ];
 
-export const ResultsTable: React.FC<ResultsTableProps> = ({
-  data,
-  isLoading,
-  progress
+export const ResultsTable: React.FC<ResultsTableProps> = ({ 
+  data, 
+  isLoading, 
+  progress = 0,
+  initialColumnConfig
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -135,13 +137,16 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({});
 
+  // Use initialColumnConfig if provided, otherwise use default
+  const columnsToUse = initialColumnConfig || defaultColumns;
+  
   const {
     columns,
     moveColumn,
     toggleColumnVisibility,
     resetColumns,
     visibleColumns
-  } = useColumnReorder(defaultColumns, 'results-table-columns');
+  } = useColumnReorder(columnsToUse, 'results-table-columns');
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
