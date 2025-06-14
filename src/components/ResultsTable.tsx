@@ -137,7 +137,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({});
 
-  // Use initialColumnConfig if provided, otherwise use default
+  // Use initialColumnConfig if provided, otherwise use default - but with independent storage
   const columnsToUse = initialColumnConfig || defaultColumns;
   
   const {
@@ -146,7 +146,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     toggleColumnVisibility,
     resetColumns,
     visibleColumns
-  } = useColumnReorder(columnsToUse, 'results-table-columns');
+  } = useColumnReorder(columnsToUse, 'results-table-display-columns');
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {

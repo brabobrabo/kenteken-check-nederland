@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { VehicleData } from '@/types/vehicle';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { LogIn, Heart } from 'lucide-react';
+import { LogIn, Heart, Trash2 } from 'lucide-react';
 
 const CACHE_KEY = 'license_plate_results';
 
@@ -196,6 +197,13 @@ const Index = () => {
     }
   };
 
+  const handleClearTable = () => {
+    setVehicleData([]);
+    setSelectedColumns([]);
+    sessionStorage.removeItem(CACHE_KEY);
+    toast.success('Table cleared successfully');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
@@ -217,6 +225,16 @@ const Index = () => {
               <Heart className="h-4 w-4" />
               <span className="hidden sm:inline">Saved Licenses</span>
             </Button>
+            {vehicleData.length > 0 && (
+              <Button 
+                onClick={handleClearTable}
+                variant="outline"
+                className="flex items-center gap-2 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Clear Table</span>
+              </Button>
+            )}
             <UserMenu />
           </div>
         </div>
