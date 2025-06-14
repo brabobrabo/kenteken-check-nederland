@@ -137,8 +137,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({});
 
-  // Use initialColumnConfig if provided, otherwise use default - but with independent storage
-  const columnsToUse = initialColumnConfig || defaultColumns;
+  // Use initialColumnConfig if provided and not empty, otherwise use default columns
+  const columnsToUse = (initialColumnConfig && initialColumnConfig.length > 0) ? initialColumnConfig : defaultColumns;
   
   const {
     columns,
@@ -147,6 +147,35 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     resetColumns,
     visibleColumns
   } = useColumnReorder(columnsToUse, 'results-table-display-columns');
+
+  // Don't render the table content if we don't have any visible columns
+  if (!visibleColumns || visibleColumns.length === 0) {
+    return (
+      <Card className="shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl sm:text-2xl text-blue-700">
+            Verification Results
+          </CardTitle>
+          {isLoading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Processing license plates...</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </div>
+          )}
+        </CardHeader>
+        {data.length === 0 && !isLoading && (
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              No data to display
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
