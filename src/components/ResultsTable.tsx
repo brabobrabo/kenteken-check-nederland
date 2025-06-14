@@ -22,18 +22,105 @@ interface ResultsTableProps {
 }
 
 interface ColumnFilters {
-  kenteken: string[];
-  merk: string[];
-  handelsbenaming: string[];
-  apkVervaldatum: string[];
-  datumEersteToelating: string[];
-  wamVerzekerd: string[];
-  geschorst: string[];
-  datumTenaamstelling: string[];
-  datumEersteTenaamstellingInNederlandDt: string[];
-  exportIndicator: string[];
-  tenaamstellenMogelijk: string[];
+  [key: string]: string[];
 }
+
+const defaultColumns: ColumnConfig[] = [
+  // Essential fields
+  { key: 'kenteken', label: 'License Plate', visible: true },
+  { key: 'merk', label: 'Make', visible: true },
+  { key: 'handelsbenaming', label: 'Model', visible: true },
+  { key: 'apkVervaldatum', label: 'MOT Expiration', visible: true },
+  { key: 'datumEersteToelating', label: 'First Admission', visible: true },
+  { key: 'wamVerzekerd', label: 'WAM Insured', visible: true },
+  { key: 'geschorst', label: 'Suspended', visible: true },
+  { key: 'datumTenaamstelling', label: 'Registration Date', visible: true },
+  { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
+  { key: 'exportIndicator', label: 'Export Indicator', visible: true },
+  { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true },
+  
+  // Additional comprehensive fields (initially hidden)
+  { key: 'voertuigsoort', label: 'Vehicle Type', visible: false },
+  { key: 'eerste_kleur', label: 'Primary Color', visible: false },
+  { key: 'tweede_kleur', label: 'Secondary Color', visible: false },
+  { key: 'aantal_zitplaatsen', label: 'Number of Seats', visible: false },
+  { key: 'aantal_staanplaatsen', label: 'Standing Places', visible: false },
+  { key: 'datum_eerste_afgifte_nederland', label: 'First Issue Netherlands', visible: false },
+  { key: 'aantal_cilinders', label: 'Number of Cylinders', visible: false },
+  { key: 'cilinder_inhoud', label: 'Engine Displacement', visible: false },
+  { key: 'massa_ledig_voertuig', label: 'Empty Vehicle Mass', visible: false },
+  { key: 'toegestane_maximum_massa_voertuig', label: 'Maximum Allowed Mass', visible: false },
+  { key: 'massa_rijklaar', label: 'Ready-to-Drive Mass', visible: false },
+  { key: 'maximum_massa_trekken_ongeremd', label: 'Max Unbraked Trailer Mass', visible: false },
+  { key: 'maximum_massa_trekken_geremd', label: 'Max Braked Trailer Mass', visible: false },
+  { key: 'datum_afgifte_kenteken', label: 'License Plate Issue Date', visible: false },
+  { key: 'vervaldatum_apk', label: 'MOT Expiration Date', visible: false },
+  { key: 'inrichting', label: 'Configuration', visible: false },
+  { key: 'aantal_wielen', label: 'Number of Wheels', visible: false },
+  { key: 'aantal_assen', label: 'Number of Axles', visible: false },
+  { key: 'vervaldatum_tachograaf', label: 'Tachograph Expiration', visible: false },
+  { key: 'taxi_indicator', label: 'Taxi Indicator', visible: false },
+  { key: 'maximum_snelheid', label: 'Maximum Speed', visible: false },
+  { key: 'laadvermogen', label: 'Load Capacity', visible: false },
+  { key: 'oplegger_geremd', label: 'Semi-trailer Braked', visible: false },
+  { key: 'aanhangwagen_autonoom_geremd', label: 'Autonomous Braked Trailer', visible: false },
+  { key: 'aanhangwagen_middenas_geremd', label: 'Center Axle Braked Trailer', visible: false },
+  { key: 'aantal_deuren', label: 'Number of Doors', visible: false },
+  { key: 'aantal_wielen_aangedreven', label: 'Driven Wheels', visible: false },
+  { key: 'lengte', label: 'Length', visible: false },
+  { key: 'breedte', label: 'Width', visible: false },
+  { key: 'europese_voertuigcategorie', label: 'European Vehicle Category', visible: false },
+  { key: 'europese_voertuigcategorie_toevoeging', label: 'European Category Addition', visible: false },
+  { key: 'europese_uitvoeringcategorie_toevoeging', label: 'European Implementation Addition', visible: false },
+  { key: 'plaats_chassisnummer', label: 'Chassis Number Location', visible: false },
+  { key: 'technische_max_massa_voertuig', label: 'Technical Max Vehicle Mass', visible: false },
+  { key: 'type', label: 'Type', visible: false },
+  { key: 'type_gasinstallatie', label: 'Gas Installation Type', visible: false },
+  { key: 'typegoedkeuringsnummer', label: 'Type Approval Number', visible: false },
+  { key: 'variant', label: 'Variant', visible: false },
+  { key: 'uitvoering', label: 'Version', visible: false },
+  { key: 'volgnummer_wijziging_eu_typegoedkeuring', label: 'EU Type Approval Change Number', visible: false },
+  { key: 'vermogen_massarijklaar', label: 'Power Mass Ready', visible: false },
+  { key: 'wielbasis', label: 'Wheelbase', visible: false },
+  { key: 'openstaande_terugroepactie_indicator', label: 'Outstanding Recall Indicator', visible: false },
+  { key: 'vervaldatum_apk_dt', label: 'MOT Expiration Date (DT)', visible: false },
+  { key: 'aantal_rolstoelplaatsen', label: 'Wheelchair Places', visible: false },
+  { key: 'maximum_ondersteunende_snelheid', label: 'Maximum Supporting Speed', visible: false },
+  { key: 'jaar_laatste_registratie_tellerstand', label: 'Last Odometer Registration Year', visible: false },
+  { key: 'tellerstandoordeel', label: 'Odometer Judgment', visible: false },
+  { key: 'code_toelichting_tellerstandoordeel', label: 'Odometer Judgment Code', visible: false },
+  { key: 'tenaamstelling_dt', label: 'Registration Date (DT)', visible: false },
+  { key: 'vervaldatum_tachograaf_dt', label: 'Tachograph Expiration (DT)', visible: false },
+  { key: 'maximum_last_onder_de_vooras_sen', label: 'Max Load Front Axles', visible: false },
+  { key: 'type_remsysteem_voertuig_code', label: 'Vehicle Brake System Code', visible: false },
+  { key: 'rupsonderstelconfiguratie', label: 'Track Configuration', visible: false },
+  { key: 'wielbasis_voertuig_minimum', label: 'Vehicle Wheelbase Minimum', visible: false },
+  { key: 'wielbasis_voertuig_maximum', label: 'Vehicle Wheelbase Maximum', visible: false },
+  { key: 'lengte_voertuig_minimum', label: 'Vehicle Length Minimum', visible: false },
+  { key: 'lengte_voertuig_maximum', label: 'Vehicle Length Maximum', visible: false },
+  { key: 'breedte_voertuig_minimum', label: 'Vehicle Width Minimum', visible: false },
+  { key: 'breedte_voertuig_maximum', label: 'Vehicle Width Maximum', visible: false },
+  { key: 'hoogte_voertuig', label: 'Vehicle Height', visible: false },
+  { key: 'hoogte_voertuig_minimum', label: 'Vehicle Height Minimum', visible: false },
+  { key: 'hoogte_voertuig_maximum', label: 'Vehicle Height Maximum', visible: false },
+  { key: 'massa_bedrijfsklaar_minimum', label: 'Ready-to-Operate Mass Minimum', visible: false },
+  { key: 'massa_bedrijfsklaar_maximum', label: 'Ready-to-Operate Mass Maximum', visible: false },
+  { key: 'technische_max_massa_beklading', label: 'Technical Max Load Mass', visible: false },
+  { key: 'type_opbouw', label: 'Body Type', visible: false },
+  { key: 'catalogusprijs', label: 'Catalog Price', visible: false },
+  { key: 'zuinigheidslabel', label: 'Efficiency Label', visible: false },
+  { key: 'co2_uitstoot_gecombineerd', label: 'CO2 Emission Combined', visible: false },
+  { key: 'co2_uitstoot_gewogen', label: 'CO2 Emission Weighted', visible: false },
+  { key: 'netto_max_vermogen', label: 'Net Max Power', visible: false },
+  { key: 'nominaal_continu_maximum_vermogen', label: 'Nominal Continuous Max Power', visible: false },
+  { key: 'nettomaximumvermogen_hybride_elektrisch', label: 'Net Max Power Hybrid Electric', visible: false },
+  { key: 'elektrisch_bereik', label: 'Electric Range', visible: false },
+  { key: 'brandstof_verbruik_buiten', label: 'Fuel Consumption Outside', visible: false },
+  { key: 'brandstof_verbruik_gecombineerd', label: 'Fuel Consumption Combined', visible: false },
+  { key: 'brandstof_verbruik_stad', label: 'Fuel Consumption City', visible: false },
+  { key: 'geluidsniveau_rijdend', label: 'Noise Level Driving', visible: false },
+  { key: 'geluidsniveau_stationair', label: 'Noise Level Stationary', visible: false }
+];
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
   data,
@@ -46,33 +133,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
-    kenteken: [],
-    merk: [],
-    handelsbenaming: [],
-    apkVervaldatum: [],
-    datumEersteToelating: [],
-    wamVerzekerd: [],
-    geschorst: [],
-    datumTenaamstelling: [],
-    datumEersteTenaamstellingInNederlandDt: [],
-    exportIndicator: [],
-    tenaamstellenMogelijk: []
-  });
-
-  const defaultColumns: ColumnConfig[] = [
-    { key: 'kenteken', label: 'License Plate', visible: true },
-    { key: 'merk', label: 'Make', visible: true },
-    { key: 'handelsbenaming', label: 'Model', visible: true },
-    { key: 'apkVervaldatum', label: 'MOT Expiration', visible: true },
-    { key: 'datumEersteToelating', label: 'First Admission', visible: true },
-    { key: 'wamVerzekerd', label: 'WAM Insured', visible: true },
-    { key: 'geschorst', label: 'Suspended', visible: true },
-    { key: 'datumTenaamstelling', label: 'Registration Date', visible: true },
-    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
-    { key: 'exportIndicator', label: 'Export Indicator', visible: true },
-    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true }
-  ];
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({});
 
   const {
     columns,
@@ -112,12 +173,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const getUniqueValues = (column: keyof VehicleData) => {
     const values = data.map(item => {
       const value = item[column];
-      // Add null check before calling toString()
       if (value === null || value === undefined) {
         return 'Unknown';
       }
       const stringValue = value.toString();
-      return column === 'datumEersteToelating' || column === 'datumTenaamstelling' || column === 'datumEersteTenaamstellingInNederlandDt' 
+      return column.toString().includes('datum') || column.toString().includes('date') 
         ? formatDate(stringValue) 
         : stringValue;
     });
@@ -137,15 +197,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     let filtered = data.filter(item => {
       // Global search
       const matchesGlobalSearch = Object.values(item).some(value =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       );
       
       // Column-specific filters
       const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValues]) => {
         if (filterValues.length === 0) return true;
-        const itemValue = key === 'datumEersteToelating' 
-          ? formatDate(item[key as keyof VehicleData].toString())
-          : item[key as keyof VehicleData].toString();
+        const itemValue = key.includes('datum') 
+          ? formatDate(item[key as keyof VehicleData]?.toString() || '')
+          : item[key as keyof VehicleData]?.toString() || '';
         return filterValues.includes(itemValue);
       });
       
@@ -153,8 +213,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     });
 
     return filtered.sort((a, b) => {
-      const aVal = a[sortColumn].toString();
-      const bVal = b[sortColumn].toString();
+      const aVal = a[sortColumn]?.toString() || '';
+      const bVal = b[sortColumn]?.toString() || '';
       const result = aVal.localeCompare(bVal);
       return sortDirection === 'asc' ? result : -result;
     });
@@ -171,19 +231,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setColumnFilters({
-      kenteken: [],
-      merk: [],
-      handelsbenaming: [],
-      apkVervaldatum: [],
-      datumEersteToelating: [],
-      wamVerzekerd: [],
-      geschorst: [],
-      datumTenaamstelling: [],
-      datumEersteTenaamstellingInNederlandDt: [],
-      exportIndicator: [],
-      tenaamstellenMogelijk: []
-    });
+    setColumnFilters({});
   };
 
   const exportToExcel = () => {
@@ -191,40 +239,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       const orderedItem: any = {};
       visibleColumns.forEach(column => {
         const key = column.key as keyof VehicleData;
-        switch (key) {
-          case 'kenteken':
-            orderedItem['License Plate'] = item.kenteken;
-            break;
-          case 'merk':
-            orderedItem['Make'] = item.merk;
-            break;
-          case 'handelsbenaming':
-            orderedItem['Model'] = item.handelsbenaming;
-            break;
-          case 'apkVervaldatum':
-            orderedItem['MOT Expiration'] = item.apkVervaldatum;
-            break;
-          case 'datumEersteToelating':
-            orderedItem['First Admission'] = formatDate(item.datumEersteToelating);
-            break;
-          case 'wamVerzekerd':
-            orderedItem['WAM Insured'] = item.wamVerzekerd;
-            break;
-          case 'geschorst':
-            orderedItem['Suspended'] = item.geschorst;
-            break;
-          case 'datumTenaamstelling':
-            orderedItem['Registration Date'] = formatDate(item.datumTenaamstelling);
-            break;
-          case 'datumEersteTenaamstellingInNederlandDt':
-            orderedItem['First NL Registration'] = formatDate(item.datumEersteTenaamstellingInNederlandDt);
-            break;
-          case 'exportIndicator':
-            orderedItem['Export Indicator'] = item.exportIndicator;
-            break;
-          case 'tenaamstellenMogelijk':
-            orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
-            break;
+        const value = item[key];
+        const label = column.label;
+        
+        if (key.toString().includes('datum') || key.toString().includes('date')) {
+          orderedItem[label] = formatDate(value?.toString() || '');
+        } else {
+          orderedItem[label] = value || 'Not Available';
         }
       });
       orderedItem['Status'] = item.status;
@@ -244,9 +265,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     navigate(`/vehicle/${kenteken}`);
   };
 
-  const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
-    const uniqueValues = getUniqueValues(column);
-    const selectedValues = columnFilters[column];
+  const FilterDropdown = ({ column, label }: { column: string; label: string }) => {
+    const uniqueValues = getUniqueValues(column as keyof VehicleData);
+    const selectedValues = columnFilters[column] || [];
     const [localSelectedValues, setLocalSelectedValues] = useState<string[]>([]);
     const [filterSearch, setFilterSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -258,7 +279,6 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     const handleOpenChange = (open: boolean) => {
       setIsOpen(open);
       if (open) {
-        // Initialize local state with current filters
         setLocalSelectedValues([...selectedValues]);
         setFilterSearch('');
       }
@@ -508,7 +528,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                             </span>
                           )}
                         </div>
-                        <FilterDropdown column={key as keyof ColumnFilters} label={label} />
+                        <FilterDropdown column={key} label={label} />
                       </div>
                     </th>
                   ))}
@@ -538,13 +558,14 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     </td>
                     {visibleColumns.map(({ key }) => {
                       const cellKey = key as keyof VehicleData;
+                      const cellValue = item[cellKey];
                       let cellContent;
                       
                       switch (cellKey) {
                         case 'kenteken':
                           cellContent = (
                             <span className="font-mono font-bold text-blue-700 text-sm">
-                              {item.kenteken}
+                              {cellValue}
                             </span>
                           );
                           break;
@@ -552,39 +573,38 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                           cellContent = (
                             <Badge
                               variant={
-                                item.wamVerzekerd.toLowerCase() === 'ja' || 
-                                item.wamVerzekerd.toLowerCase() === 'yes'
+                                cellValue?.toString().toLowerCase() === 'ja' || 
+                                cellValue?.toString().toLowerCase() === 'yes'
                                   ? 'default'
-                                  : item.wamVerzekerd === 'Not Found' || item.wamVerzekerd === 'Error'
+                                  : cellValue === 'Not Found' || cellValue === 'Error'
                                   ? 'destructive'
                                   : 'secondary'
                               }
                               className={
-                                item.wamVerzekerd.toLowerCase() === 'ja' || 
-                                item.wamVerzekerd.toLowerCase() === 'yes'
+                                cellValue?.toString().toLowerCase() === 'ja' || 
+                                cellValue?.toString().toLowerCase() === 'yes'
                                   ? 'bg-green-100 text-green-800'
                                   : ''
                               }
                             >
-                              {item.wamVerzekerd}
+                              {cellValue || 'Unknown'}
                             </Badge>
                           );
                           break;
-                        case 'datumEersteToelating':
-                        case 'datumTenaamstelling':
-                        case 'datumEersteTenaamstellingInNederlandDt':
-                          cellContent = (
-                            <span className="text-sm">
-                              {formatDate(item[cellKey])}
-                            </span>
-                          );
-                          break;
                         default:
-                          cellContent = (
-                            <span className="text-sm truncate max-w-0">
-                              {item[cellKey]}
-                            </span>
-                          );
+                          if (cellKey.toString().includes('datum') || cellKey.toString().includes('date')) {
+                            cellContent = (
+                              <span className="text-sm">
+                                {formatDate(cellValue?.toString() || '')}
+                              </span>
+                            );
+                          } else {
+                            cellContent = (
+                              <span className="text-sm truncate max-w-0">
+                                {cellValue || 'Not Available'}
+                              </span>
+                            );
+                          }
                       }
                       
                       return (
