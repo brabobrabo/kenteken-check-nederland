@@ -15,44 +15,6 @@ import * as XLSX from 'xlsx';
 import { ColumnSettings } from './ColumnSettings';
 import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
 
-const allFilterKeys = [
-  'kenteken',
-  'merk',
-  'handelsbenaming',
-  'apkVervaldatum',
-  'datumEersteToelating',
-  'wamVerzekerd',
-  'geschorst',
-  'datumTenaamstelling',
-  'datumEersteTenaamstellingInNederlandDt',
-  'exportIndicator',
-  'tenaamstellenMogelijk',
-  'voertuigsoort',
-  'eerste_kleur',
-  'tweede_kleur',
-  'aantal_zitplaatsen',
-  'aantal_staanplaatsen',
-  'datum_eerste_afgifte_nederland',
-  'aantal_cilinders',
-  'cilinder_inhoud',
-  'massa_ledig_voertuig',
-  'toegestane_maximum_massa_voertuig',
-  'massa_rijklaar',
-  'maximum_massa_trekken_ongeremd',
-  'maximum_massa_trekken_geremd',
-  'datum_afgifte_kenteken',
-  'vervaldatum_apk',
-  'inrichting',
-  'aantal_wielen',
-  'aantal_assen'
-] as const;
-type FilterKey = typeof allFilterKeys[number];
-
-const emptyColumnFilters: Record<FilterKey, string[]> = allFilterKeys.reduce((acc, key) => {
-  acc[key] = [];
-  return acc;
-}, {} as Record<FilterKey, string[]>);
-
 interface ResultsTableProps {
   data: VehicleData[];
   isLoading: boolean;
@@ -71,24 +33,6 @@ interface ColumnFilters {
   datumEersteTenaamstellingInNederlandDt: string[];
   exportIndicator: string[];
   tenaamstellenMogelijk: string[];
-  voertuigsoort: string[];
-  eerste_kleur: string[];
-  tweede_kleur: string[];
-  aantal_zitplaatsen: string[];
-  aantal_staanplaatsen: string[];
-  datum_eerste_afgifte_nederland: string[];
-  aantal_cilinders: string[];
-  cilinder_inhoud: string[];
-  massa_ledig_voertuig: string[];
-  toegestane_maximum_massa_voertuig: string[];
-  massa_rijklaar: string[];
-  maximum_massa_trekken_ongeremd: string[];
-  maximum_massa_trekken_geremd: string[];
-  datum_afgifte_kenteken: string[];
-  vervaldatum_apk: string[];
-  inrichting: string[];
-  aantal_wielen: string[];
-  aantal_assen: string[];
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -102,38 +46,32 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [columnFilters, setColumnFilters] = useState<Record<FilterKey, string[]>>({ ...emptyColumnFilters });
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
+    kenteken: [],
+    merk: [],
+    handelsbenaming: [],
+    apkVervaldatum: [],
+    datumEersteToelating: [],
+    wamVerzekerd: [],
+    geschorst: [],
+    datumTenaamstelling: [],
+    datumEersteTenaamstellingInNederlandDt: [],
+    exportIndicator: [],
+    tenaamstellenMogelijk: []
+  });
 
-  const allPossibleColumns: ColumnConfig[] = [
+  const defaultColumns: ColumnConfig[] = [
     { key: 'kenteken', label: 'License Plate', visible: true },
     { key: 'merk', label: 'Make', visible: true },
-    { key: 'handelsbenaming', label: 'Model/Trade Name', visible: true },
-    { key: 'voertuigsoort', label: 'Vehicle Type', visible: false },
-    { key: 'eerste_kleur', label: 'Primary Color', visible: false },
-    { key: 'tweede_kleur', label: 'Secondary Color', visible: false },
-    { key: 'aantal_zitplaatsen', label: 'Number of Seats', visible: false },
-    { key: 'aantal_staanplaatsen', label: 'Standing Places', visible: false },
-    { key: 'datum_eerste_toelating', label: 'First Admission Date', visible: false },
-    { key: 'datum_eerste_afgifte_nederland', label: 'First Issue Netherlands', visible: false },
-    { key: 'wam_verzekerd', label: 'WAM Insured', visible: true },
-    { key: 'aantal_cilinders', label: 'Number of Cylinders', visible: false },
-    { key: 'cilinder_inhoud', label: 'Engine Displacement', visible: false },
-    { key: 'massa_ledig_voertuig', label: 'Empty Vehicle Mass', visible: false },
-    { key: 'toegestane_maximum_massa_voertuig', label: 'Maximum Allowed Mass', visible: false },
-    { key: 'massa_rijklaar', label: 'Ready-to-Drive Mass', visible: false },
-    { key: 'maximum_massa_trekken_ongeremd', label: 'Max Unbraked Trailer Mass', visible: false },
-    { key: 'maximum_massa_trekken_geremd', label: 'Max Braked Trailer Mass', visible: false },
-    { key: 'datum_afgifte_kenteken', label: 'License Plate Issue Date', visible: false },
-    { key: 'datum_tenaamstelling', label: 'Registration Date', visible: true },
+    { key: 'handelsbenaming', label: 'Model', visible: true },
     { key: 'apkVervaldatum', label: 'MOT Expiration', visible: true },
-    { key: 'vervaldatum_apk', label: 'MOT Expiration Date', visible: false },
-    { key: 'inrichting', label: 'Configuration', visible: false },
-    { key: 'aantal_wielen', label: 'Number of Wheels', visible: false },
-    { key: 'aantal_assen', label: 'Number of Axles', visible: false },
-    { key: 'exportIndicator', label: 'Export Indicator', visible: true },
-    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true },
+    { key: 'datumEersteToelating', label: 'First Admission', visible: true },
+    { key: 'wamVerzekerd', label: 'WAM Insured', visible: true },
     { key: 'geschorst', label: 'Suspended', visible: true },
-    { key: 'status', label: 'Status', visible: true },
+    { key: 'datumTenaamstelling', label: 'Registration Date', visible: true },
+    { key: 'datumEersteTenaamstellingInNederlandDt', label: 'First NL Registration', visible: true },
+    { key: 'exportIndicator', label: 'Export Indicator', visible: true },
+    { key: 'tenaamstellenMogelijk', label: 'Registration Possible', visible: true }
   ];
 
   const {
@@ -142,7 +80,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     toggleColumnVisibility,
     resetColumns,
     visibleColumns
-  } = useColumnReorder(allPossibleColumns, 'results-table-columns');
+  } = useColumnReorder(defaultColumns, 'results-table-columns');
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === 'Unknown' || dateString === 'Not Found' || dateString === 'Error') {
@@ -150,6 +88,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
     
     try {
+      // Handle YYYYMMDD format
       if (dateString.length === 8 && /^\d{8}$/.test(dateString)) {
         const year = dateString.substring(0, 4);
         const month = dateString.substring(4, 6);
@@ -157,6 +96,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         return `${day}-${month}-${year}`;
       }
       
+      // Handle other date formats
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
         return date.toLocaleDateString('nl-NL');
@@ -168,9 +108,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
+  // Get unique values for each column
   const getUniqueValues = (column: keyof VehicleData) => {
     const values = data.map(item => {
       const value = item[column];
+      // Add null check before calling toString()
       if (value === null || value === undefined) {
         return 'Unknown';
       }
@@ -193,10 +135,12 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   const filteredData = useMemo(() => {
     let filtered = data.filter(item => {
+      // Global search
       const matchesGlobalSearch = Object.values(item).some(value =>
         value.toString().toLowerCase().includes(searchTerm.toLowerCase())
       );
       
+      // Column-specific filters
       const matchesColumnFilters = Object.entries(columnFilters).every(([key, filterValues]) => {
         if (filterValues.length === 0) return true;
         const itemValue = key === 'datumEersteToelating' 
@@ -225,13 +169,84 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setColumnFilters({
+      kenteken: [],
+      merk: [],
+      handelsbenaming: [],
+      apkVervaldatum: [],
+      datumEersteToelating: [],
+      wamVerzekerd: [],
+      geschorst: [],
+      datumTenaamstelling: [],
+      datumEersteTenaamstellingInNederlandDt: [],
+      exportIndicator: [],
+      tenaamstellenMogelijk: []
+    });
+  };
+
+  const exportToExcel = () => {
+    const orderedData = filteredData.map(item => {
+      const orderedItem: any = {};
+      visibleColumns.forEach(column => {
+        const key = column.key as keyof VehicleData;
+        switch (key) {
+          case 'kenteken':
+            orderedItem['License Plate'] = item.kenteken;
+            break;
+          case 'merk':
+            orderedItem['Make'] = item.merk;
+            break;
+          case 'handelsbenaming':
+            orderedItem['Model'] = item.handelsbenaming;
+            break;
+          case 'apkVervaldatum':
+            orderedItem['MOT Expiration'] = item.apkVervaldatum;
+            break;
+          case 'datumEersteToelating':
+            orderedItem['First Admission'] = formatDate(item.datumEersteToelating);
+            break;
+          case 'wamVerzekerd':
+            orderedItem['WAM Insured'] = item.wamVerzekerd;
+            break;
+          case 'geschorst':
+            orderedItem['Suspended'] = item.geschorst;
+            break;
+          case 'datumTenaamstelling':
+            orderedItem['Registration Date'] = formatDate(item.datumTenaamstelling);
+            break;
+          case 'datumEersteTenaamstellingInNederlandDt':
+            orderedItem['First NL Registration'] = formatDate(item.datumEersteTenaamstellingInNederlandDt);
+            break;
+          case 'exportIndicator':
+            orderedItem['Export Indicator'] = item.exportIndicator;
+            break;
+          case 'tenaamstellenMogelijk':
+            orderedItem['Registration Possible'] = item.tenaamstellenMogelijk;
+            break;
+        }
+      });
+      orderedItem['Status'] = item.status;
+      return orderedItem;
+    });
+    
+    const worksheet = XLSX.utils.json_to_sheet(orderedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Vehicle Data');
+    XLSX.writeFile(workbook, `vehicle_verification_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const foundCount = data.filter(item => item.status === 'found').length;
+  const errorCount = data.filter(item => item.status === 'error').length;
+
   const handleRowClick = (kenteken: string) => {
     navigate(`/vehicle/${kenteken}`);
   };
 
-  const FilterDropdown = ({ column, label }: { column: FilterKey; label: string }) => {
-    const uniqueValues = getUniqueValues(column as keyof VehicleData);
-    const selectedValues = columnFilters[column] || [];
+  const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
+    const uniqueValues = getUniqueValues(column);
+    const selectedValues = columnFilters[column];
     const [localSelectedValues, setLocalSelectedValues] = useState<string[]>([]);
     const [filterSearch, setFilterSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -243,6 +258,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     const handleOpenChange = (open: boolean) => {
       setIsOpen(open);
       if (open) {
+        // Initialize local state with current filters
         setLocalSelectedValues([...selectedValues]);
         setFilterSearch('');
       }
@@ -415,6 +431,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       
       {data.length > 0 && (
         <CardContent className="px-2 sm:px-6">
+          {/* Mobile Card View */}
           <div className="block sm:hidden space-y-3">
             {filteredData.map((item, index) => (
               <div
@@ -471,6 +488,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             ))}
           </div>
 
+          {/* Desktop Table View */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -490,7 +508,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                             </span>
                           )}
                         </div>
-                        <FilterDropdown column={key as FilterKey} label={label} />
+                        <FilterDropdown column={key as keyof ColumnFilters} label={label} />
                       </div>
                     </th>
                   ))}
