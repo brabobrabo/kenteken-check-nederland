@@ -64,37 +64,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof VehicleData>('kenteken');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
-    kenteken: [],
-    merk: [],
-    handelsbenaming: [],
-    apkVervaldatum: [],
-    datumEersteToelating: [],
-    wamVerzekerd: [],
-    geschorst: [],
-    datumTenaamstelling: [],
-    datumEersteTenaamstellingInNederlandDt: [],
-    exportIndicator: [],
-    tenaamstellenMogelijk: [],
-    voertuigsoort: [],
-    eerste_kleur: [],
-    tweede_kleur: [],
-    aantal_zitplaatsen: [],
-    aantal_staanplaatsen: [],
-    datum_eerste_afgifte_nederland: [],
-    aantal_cilinders: [],
-    cilinder_inhoud: [],
-    massa_ledig_voertuig: [],
-    toegestane_maximum_massa_voertuig: [],
-    massa_rijklaar: [],
-    maximum_massa_trekken_ongeremd: [],
-    maximum_massa_trekken_geremd: [],
-    datum_afgifte_kenteken: [],
-    vervaldatum_apk: [],
-    inrichting: [],
-    aantal_wielen: [],
-    aantal_assen: [],
-  });
+  const [columnFilters, setColumnFilters] = useState<Record<FilterKey, string[]>>({ ...emptyColumnFilters });
 
   const allPossibleColumns: ColumnConfig[] = [
     { key: 'kenteken', label: 'License Plate', visible: true },
@@ -217,39 +187,47 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
+  const allFilterKeys = [
+    'kenteken',
+    'merk',
+    'handelsbenaming',
+    'apkVervaldatum',
+    'datumEersteToelating',
+    'wamVerzekerd',
+    'geschorst',
+    'datumTenaamstelling',
+    'datumEersteTenaamstellingInNederlandDt',
+    'exportIndicator',
+    'tenaamstellenMogelijk',
+    'voertuigsoort',
+    'eerste_kleur',
+    'tweede_kleur',
+    'aantal_zitplaatsen',
+    'aantal_staanplaatsen',
+    'datum_eerste_afgifte_nederland',
+    'aantal_cilinders',
+    'cilinder_inhoud',
+    'massa_ledig_voertuig',
+    'toegestane_maximum_massa_voertuig',
+    'massa_rijklaar',
+    'maximum_massa_trekken_ongeremd',
+    'maximum_massa_trekken_geremd',
+    'datum_afgifte_kenteken',
+    'vervaldatum_apk',
+    'inrichting',
+    'aantal_wielen',
+    'aantal_assen'
+  ] as const;
+  type FilterKey = typeof allFilterKeys[number];
+
+  const emptyColumnFilters: Record<FilterKey, string[]> = {} as Record<FilterKey, string[]>;
+  for (const key of allFilterKeys) {
+    emptyColumnFilters[key] = [];
+  }
+
   const clearAllFilters = () => {
     setSearchTerm('');
-    setColumnFilters({
-      kenteken: [],
-      merk: [],
-      handelsbenaming: [],
-      apkVervaldatum: [],
-      datumEersteToelating: [],
-      wamVerzekerd: [],
-      geschorst: [],
-      datumTenaamstelling: [],
-      datumEersteTenaamstellingInNederlandDt: [],
-      exportIndicator: [],
-      tenaamstellenMogelijk: [],
-      voertuigsoort: [],
-      eerste_kleur: [],
-      tweede_kleur: [],
-      aantal_zitplaatsen: [],
-      aantal_staanplaatsen: [],
-      datum_eerste_afgifte_nederland: [],
-      aantal_cilinders: [],
-      cilinder_inhoud: [],
-      massa_ledig_voertuig: [],
-      toegestane_maximum_massa_voertuig: [],
-      massa_rijklaar: [],
-      maximum_massa_trekken_ongeremd: [],
-      maximum_massa_trekken_geremd: [],
-      datum_afgifte_kenteken: [],
-      vervaldatum_apk: [],
-      inrichting: [],
-      aantal_wielen: [],
-      aantal_assen: [],
-    });
+    setColumnFilters({ ...emptyColumnFilters });
   };
 
   const exportToExcel = () => {
@@ -364,9 +342,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     navigate(`/vehicle/${kenteken}`);
   };
 
-  const FilterDropdown = ({ column, label }: { column: keyof ColumnFilters; label: string }) => {
-    const uniqueValues = getUniqueValues(column);
-    const selectedValues = columnFilters[column];
+  const FilterDropdown = ({ column, label }: { column: FilterKey; label: string }) => {
+    const uniqueValues = getUniqueValues(column as keyof VehicleData);
+    const selectedValues = columnFilters[column] || [];
     const [localSelectedValues, setLocalSelectedValues] = useState<string[]>([]);
     const [filterSearch, setFilterSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -625,7 +603,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                             </span>
                           )}
                         </div>
-                        <FilterDropdown column={key as keyof ColumnFilters} label={label} />
+                        <FilterDropdown column={key as FilterKey} label={label} />
                       </div>
                     </th>
                   ))}
