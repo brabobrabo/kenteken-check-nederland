@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { VehicleData } from '@/types/vehicle';
 import { useSavedLicenses } from '@/hooks/useSavedLicenses';
 import { useAuth } from '@/contexts/AuthContext';
 import * as XLSX from 'xlsx';
-import { useColumnReorder, ColumnConfig } from '@/hooks/useColumnReorder';
+import { ColumnConfig } from '@/hooks/useColumnReorder';
 
 interface ResultsTableProps {
   data: VehicleData[];
@@ -527,7 +528,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             <div className="text-center py-8 text-gray-500">
               No results found with current filters
             </div>
-          </div>
+          )}
         </CardContent>
       )}
     </Card>
